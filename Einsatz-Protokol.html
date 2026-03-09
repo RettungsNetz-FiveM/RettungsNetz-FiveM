@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Einsatzdokumentation – Bereitschaft</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<style>
+/* ══ THEMES ══ */
+[data-theme="light"] {
+  --bg:      #E8E3DC;
+  --card:    #FFFFFF;
+  --g1:      #1A1A1A;
+  --g2:      #2D2D2D;
+  --g4:      #888888;
+  --g5:      #B8B8B8;
+  --g6:      #E0E0E0;
+  --g7:      #F4F3F1;
+  --bd:      1px solid #D4CEC8;
+  --inp-bg:  #F4F3F1;
+  --inp-foc: #FFFFFF;
+  --strip-bg:#1A1A1A;
+  --strip-c: #888;
+  --strip-v: #FFFFFF;
+  --head-bg: #F4F3F1;
+}
+[data-theme="dark"] {
+  --bg:      #141414;
+  --card:    #1E1E1E;
+  --g1:      #E8E8E8;
+  --g2:      #CCCCCC;
+  --g4:      #777777;
+  --g5:      #555555;
+  --g6:      #333333;
+  --g7:      #282828;
+  --bd:      1px solid #383838;
+  --inp-bg:  #282828;
+  --inp-foc: #2E2E2E;
+  --strip-bg:#0A0A0A;
+  --strip-c: #666;
+  --strip-v: #E0E0E0;
+  --head-bg: #252525;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --rot:   #C0392B;
+  --rot-d: #922B21;
+  --gap:   2px;
+  --c-patient:  #C0392B;
+  --c-fz:       #1A6B9A;
+  --c-notfall:  #7B3FA0;
+  --c-befund:   #1A7A5E;
+  --c-verletz:  #B8470B;
+  --c-erkrank:  #9A6B1A;
+  --c-massn:    #C0392B;
+  --c-ergebnis: #1A6B9A;
+  --c-transport:#1A7A5E;
+  --c-bemerk:   #9A6B1A;
+  --c-sig:      #2D2D2D;
+}
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--g1);
+  font-size: 12px;
+  min-height: 100vh;
+  transition: background .25s, color .25s;
+}
+
+/* ══ TOPBAR ══ */
+.topbar {
+  background: #0d1117;
+  border-bottom: 2px solid var(--rot);
+  display: flex; align-items: center;
+  height: 54px; position: sticky; top: 0; z-index: 200;
+  padding: 0; gap: 0;
+}
+
+/* Logo block */
+.tl {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 18px;
+  border-right: 1px solid #1e2a3a;
+  height: 100%;
+}
+.logo-wrap {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.logo-wrap img { width: 34px; height: 34px; object-fit: contain; }
+.logo-fallback {
+  width: 34px; height: 34px; background: var(--rot);
+  display: none; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 900; font-size: 13px; color: #fff;
+  clip-path: polygon(0 0, 85% 0, 100% 50%, 85% 100%, 0 100%);
+}
+.t-name { display: flex; flex-direction: column; gap: 2px; }
+.t-title {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px; font-weight: 800;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: #f0f4fa; line-height: 1;
+}
+.t-title span { color: var(--rot); }
+.t-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; letter-spacing: 2px;
+  color: #4a5a70; text-transform: uppercase;
+}
+
+/* Module tag */
+.t-module-tag {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 18px;
+  border-right: 1px solid #1e2a3a;
+  height: 100%;
+}
+.t-module-inner {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.t-mod-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 7px; letter-spacing: 2px;
+  color: #4a5a70; text-transform: uppercase;
+}
+.t-mod-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 1px;
+  color: #cdd6e8; text-transform: uppercase;
+}
+
+/* Status dot */
+.t-status {
+  display: flex; align-items: center; gap: 7px;
+  padding: 0 18px;
+  border-right: 1px solid #1e2a3a;
+  height: 100%;
+}
+.t-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #52b788;
+  box-shadow: 0 0 6px rgba(82,183,136,.5);
+  animation: tbPulse 2s ease-in-out infinite;
+}
+@keyframes tbPulse {
+  0%,100% { opacity:1; box-shadow: 0 0 6px rgba(82,183,136,.5); }
+  50%      { opacity:.6; box-shadow: 0 0 10px rgba(82,183,136,.2); }
+}
+.t-dot-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px; letter-spacing: 1.5px;
+  color: #52b788; text-transform: uppercase;
+}
+
+/* Spacer */
+.t-spacer { flex: 1; }
+
+/* Right buttons */
+.tr-btns { display: flex; align-items: center; gap: 6px; padding: 0 14px; }
+.btn-top {
+  border: 1px solid #1e2a3a; height: 30px; padding: 0 13px; cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 400;
+  letter-spacing: 1.5px; text-transform: uppercase; background: #111822;
+  display: flex; align-items: center; gap: 6px;
+  transition: border-color .15s, color .15s, background .15s;
+  color: #8a9ab5; border-radius: 2px;
+}
+.btn-top:hover { border-color: #253040; color: #cdd6e8; }
+.btn-print { background: var(--rot); border-color: var(--rot); color: #fff; }
+.btn-print:hover { background: var(--rot-d); border-color: var(--rot-d); }
+.btn-print svg { width: 11px; height: 11px; }
+.btn-theme svg { width: 13px; height: 13px; }
+
+/* ══ MAIN ══ */
+.main { width: 100%; padding: 8px 8px 60px; display: flex; flex-direction: column; gap: var(--gap); }
+
+/* ID STRIP */
+.id-strip {
+  background: var(--strip-bg);
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 6px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+}
+.id-field { display: flex; align-items: center; gap: 6px; }
+.id-field span { color: var(--strip-c); white-space: nowrap; font-size: 10px; }
+.id-field input {
+  background: transparent; border: none; border-bottom: 1px solid #444;
+  color: var(--strip-v); font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  padding: 1px 4px; outline: none;
+}
+.id-field input:focus { border-bottom-color: var(--rot); }
+.id-field input.wide { width: 200px; }
+.id-field input.med  { width: 105px; }
+.id-field input.sm   { width: 80px; }
+
+/* ROW */
+.row { display: flex; gap: var(--gap); align-items: stretch; width: 100%; }
+
+/* SECTION */
+.section {
+  background: var(--card); border-left: 4px solid transparent;
+  display: flex; flex-direction: column; flex: 1; min-width: 0;
+  transition: background .25s;
+}
+.s-head {
+  background: var(--head-bg); padding: 5px 11px;
+  display: flex; align-items: center; gap: 7px;
+  border-bottom: var(--bd); flex-shrink: 0; transition: background .25s;
+}
+.s-num   { font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 700; min-width: 18px; }
+.s-title { font-size: 9px; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase; color: var(--g2); }
+.s-body  { padding: 9px 11px; flex: 1; display: flex; flex-direction: column; gap: 7px; }
+
+/* GRIDS */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px 10px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px 10px; }
+.c2 { grid-column: span 2; }
+.c3 { grid-column: span 3; }
+.c4 { grid-column: span 4; }
+
+/* FIELD */
+.f { display: flex; flex-direction: column; gap: 2px; }
+.f > label { font-size: 8px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--g4); }
+.f input, .f select, .f textarea {
+  width: 100%; border: var(--bd); background: var(--inp-bg);
+  padding: 5px 7px; font-family: 'IBM Plex Sans', sans-serif; font-size: 11px;
+  color: var(--g1); outline: none; transition: border-color .15s, background .25s;
+  border-radius: 0; appearance: none; -webkit-appearance: none;
+}
+.f input:focus, .f select:focus, .f textarea:focus { border-color: var(--rot); background: var(--inp-foc); }
+.f textarea { resize: vertical; min-height: 62px; line-height: 1.45; }
+.f textarea.xl { min-height: 96px; }
+.f select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 7px center; padding-right: 22px;
+}
+
+/* CHECKS — normal */
+.cg { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.ci { display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 10px; color: var(--g2); user-select: none; }
+.ci input[type="checkbox"] { width: 12px; height: 12px; accent-color: var(--rot); cursor: pointer; margin: 0; flex-shrink: 0; }
+
+/* CHECKS — large */
+.cg-lg { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.ci-lg { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12.5px; font-weight: 500; color: var(--g1); user-select: none; line-height: 1.4; }
+.ci-lg input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--rot); cursor: pointer; margin: 0; flex-shrink: 0; }
+
+/* RADIOS */
+.rg { display: flex; gap: 4px 12px; flex-wrap: wrap; }
+.ri { display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 10px; color: var(--g2); user-select: none; }
+.ri input[type="radio"] { width: 12px; height: 12px; accent-color: var(--rot); cursor: pointer; margin: 0; flex-shrink: 0; }
+
+/* SUB LABEL */
+.sub-lbl { font-size: 8px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--g4); }
+
+/* MASSNAHMEN GROUPS */
+.m-group { display: flex; flex-direction: column; gap: 4px; }
+.m-group-label {
+  font-size: 8px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 2px 6px; display: inline-block; border-radius: 2px;
+}
+.m-group-label.rot   { color: #C0392B; border-left: 3px solid #C0392B; padding-left: 5px; background: rgba(192,57,43,.08); }
+.m-group-label.blau  { color: #1A6B9A; border-left: 3px solid #1A6B9A; padding-left: 5px; background: rgba(26,107,154,.08); }
+.m-group-label.gruen { color: #1A7A5E; border-left: 3px solid #1A7A5E; padding-left: 5px; background: rgba(26,122,94,.08); }
+.m-groups-row { display: flex; gap: 14px; align-items: flex-start; }
+.m-groups-row > .m-group { flex: 1; }
+.m-sep { width: 1px; background: var(--g6); align-self: stretch; flex-shrink: 0; }
+
+/* VITALS TABLE */
+.vt { width: 100%; border-collapse: collapse; font-size: 10px; }
+.vt th {
+  background: var(--head-bg); border: var(--bd); padding: 4px 6px;
+  text-align: center; font-size: 8px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--g4);
+}
+.vt td { border: var(--bd); padding: 1px; }
+.vt td input {
+  width: 100%; border: none; background: transparent;
+  padding: 4px 5px; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: var(--g1); outline: none; text-align: center;
+}
+.vt td input:focus { background: var(--inp-foc); }
+.vt tr:nth-child(even) td { background: var(--inp-bg); }
+.vt-time-cell { display: flex; align-items: center; gap: 2px; padding: 1px 2px; }
+.vt-time-cell input { flex: 1; min-width: 0; }
+.btn-now {
+  background: var(--rot); color: #fff; border: none; cursor: pointer;
+  font-size: 8px; font-weight: 700; padding: 2px 5px; white-space: nowrap;
+  font-family: 'IBM Plex Sans', sans-serif; flex-shrink: 0; transition: background .15s; line-height: 1.2;
+}
+.btn-now:hover { background: var(--rot-d); }
+
+.divider { height: 1px; background: var(--g6); flex-shrink: 0; }
+
+/* SIGNATURES */
+.sig-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 14px; }
+.sig-box  { display: flex; flex-direction: column; gap: 5px; }
+.sig-author-wrap {
+  border: var(--bd); background: var(--inp-bg);
+  display: flex; align-items: center; justify-content: center;
+  min-height: 80px; padding: 6px 10px; transition: background .25s;
+}
+.sig-author-input {
+  width: 100%; border: none; background: transparent; outline: none; resize: none;
+  font-family: 'Dancing Script', cursive; font-size: 28px; color: var(--g1);
+  line-height: 1.2; text-align: center;
+}
+.sig-author-input::placeholder { color: var(--g5); font-size: 20px; }
+.sig-lbl  { font-size: 8px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--g4); }
+.sig-hint { font-size: 8px; color: var(--g5); font-style: italic; }
+
+/* PRINT */
+@media print {
+  @page { size: A4 landscape; margin: 5mm; }
+  html, body { background: white !important; font-size: 10px; color: #000 !important; }
+  .topbar, .btn-print, .btn-theme, .btn-now { display: none !important; }
+  .main { padding: 0 !important; }
+  .section { background: white !important; break-inside: avoid; }
+  .row { break-inside: avoid; }
+  .id-strip { background: #111 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .s-head   { background: #f2f2f2 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .vt th    { background: #f2f2f2 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .f input, .f select, .f textarea { background: white !important; color: #000 !important; }
+  .id-field input { color: #fff !important; }
+  .sig-author-wrap { background: white !important; border: 1px solid #ccc !important; }
+  .m-group-label.rot   { background: rgba(192,57,43,.08) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .m-group-label.blau  { background: rgba(26,107,154,.08) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .m-group-label.gruen { background: rgba(26,122,94,.08) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+/* JS sets body.printing before window.print() to hide placeholders */
+body.printing input::placeholder,
+body.printing textarea::placeholder { color: transparent !important; }
+</style>
+</head>
+<body>
+
+<div class="main">
+
+  <!-- ID STRIP -->
+  <div class="id-strip">
+    <div class="id-field"><span>Einsatz-Nr.</span><input class="med" type="text" id="enr" placeholder="Melder Nr."></div>
+    <div class="id-field"><span>Datum</span><input class="med" type="date" id="einsatz_datum"></div>
+    <div class="id-field"><span>Alarmzeit</span><input class="sm" type="time" id="alarmzeit"></div>
+    <div class="id-field"><span>Einsatzort</span><input class="wide" type="text" id="einsatzort" placeholder="Postleitzahl"></div>
+    <div class="id-field"><span>Stichwort</span><input class="wide" type="text" placeholder="Meldebild / Einsatzstichwort"></div>
+  </div>
+
+  <!-- ══ ROW 1 ══ -->
+  <div class="row">
+
+    <!-- 01 PATIENT -->
+    <div class="section" style="border-left-color:var(--c-patient); flex:1;">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-patient);">01</span>
+        <span class="s-title">Patientendaten</span>
+      </div>
+      <div class="s-body">
+        <div class="g4">
+          <div class="f c2"><label>Nachname</label><input type="text" placeholder="Mustermann"></div>
+          <div class="f c2"><label>Vorname</label><input type="text" placeholder="Max"></div>
+          <div class="f c2"><label>Geburtsdatum</label><input type="date"></div>
+          <div class="f"><label>Geschlecht</label>
+            <select><option value="">—</option><option>Männlich</option><option>Weiblich</option><option>Divers</option></select>
+          </div>
+          <div class="f"><label>Arbeitgeber / Job</label><input type="text" placeholder="z.B. Polizei, Feuerwehr, Arzt …"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 FAHRZEUGE -->
+    <div class="section" style="border-left-color:var(--c-fz); flex:1.1;">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-fz);">02</span>
+        <span class="s-title">Fahrzeuge &amp; Besatzung</span>
+      </div>
+      <div class="s-body">
+        <div class="g4">
+          <div class="f"><label>Fahrzeugtyp</label>
+            <select><option value="">—</option><option>RTW</option><option>KTW</option><option>NEF</option><option>RTH</option><option>HvO</option><option>GW-San</option><option>Sonstiges</option></select>
+          </div>
+          <div class="f"><label>Kennung</label><input type="text" placeholder="Florian 1-83-1"></div>
+          <div class="f"><label>Wache / Org.</label><input type="text" placeholder="RW Mitte"></div>
+          <div class="f"><label>Ausrückezeit</label><div class="vt-time-cell"><input type="text" id="ausrueck_time" placeholder="HH:MM"><button class="btn-now" onclick="setNow('ausrueck_time')">⏱ Zeit</button></div></div>
+          <div class="f"><label>Ankunftszeit</label><div class="vt-time-cell"><input type="text" id="ankunft_time" placeholder="HH:MM"><button class="btn-now" onclick="setNow('ankunft_time')">⏱ Zeit</button></div></div>
+          <div class="f c3"><label>Weitere Eingesetzte Fahrzeuge</label><input type="text" placeholder="NEF Florian 2-10-1, RTW 1-83-2 …"></div>
+          <div class="f c4"><label>Mitarbeiter 1 (Fahrer)</label><input type="text" placeholder="Name, Qualifikation"></div>
+          <div class="f c4"><label>Mitarbeiter 2 (Beifahrer)</label><input type="text" placeholder="Name, Qualifikation"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 NOTFALL -->
+    <div class="section" style="border-left-color:var(--c-notfall); flex:1.4;">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-notfall);">03</span>
+        <span class="s-title">Notfallsituation</span>
+      </div>
+      <div class="s-body">
+        <div class="g3">
+          <div class="f"><label>Einsatzart</label>
+            <select><option value="">—</option><option>Notfalleinsatz (RTW)</option><option>Notarzteinsatz (NEF/RTH)</option><option>Krankentransport</option><option>Grossschadensereignis</option><option>Fehleinsatz</option></select>
+          </div>
+          <div class="f"><label>Patientenlage bei Ankunft</label>
+            <select><option value="">—</option><option>Bewusst, ansprechbar</option><option>Bewusstsein eingeschränkt</option><option>Bewusstlos, atmend</option><option>Bewusstlos – Reanimation</option><option>Stehend / Gehend</option><option>Sitzend</option><option>Liegend</option><option>Eingeklemmt</option></select>
+          </div>
+          <div class="f"><label>Besonderheit</label><input type="text" placeholder="Besonderheit Lage …"></div>
+          <div class="f c3"><label>Situationsbeschreibung</label>
+            <textarea class="xl" placeholder="Detaillierte Beschreibung der Notfallsituation, Vorfallhergang, Lage bei Eintreffen …"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ ROW 2 ══ -->
+  <div class="row">
+
+    <!-- 04 ERSTBEFUND -->
+    <div class="section" style="border-left-color:var(--c-befund); flex:1.4;">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-befund);">04</span>
+        <span class="s-title">Erstbefund &amp; Vitalzeichen (ABCDE)</span>
+      </div>
+      <div class="s-body">
+        <div class="g3">
+          <div class="f"><label>A — Atemweg</label>
+            <select><option value="">—</option><option>Frei</option><option>Verlegt</option><option>Intubiert</option></select>
+          </div>
+          <div class="f"><label>B — Atmung</label>
+            <select><option value="">—</option><option>Normal 12–20/min</option><option>Tachypnoe &gt;20</option><option>Bradypnoe &lt;12</option><option>Schnappatmung</option><option>Keine Atmung</option><option>Beatmet</option></select>
+          </div>
+          <div class="f"><label>C — Kreislauf</label>
+            <select><option value="">—</option><option>Stabil</option><option>Tachykardie</option><option>Bradykardie</option><option>Hypotonie</option><option>Hypertonie</option><option>Kreislaufstillstand</option></select>
+          </div>
+          <div class="f"><label>D — Neurologie / GCS</label>
+            <select><option value="">—</option><option>GCS 15 (normal)</option><option>GCS 9–14</option><option>GCS 3–8</option><option>Orientiert</option><option>Desorientiert</option></select>
+          </div>
+          <div class="f"><label>Pupillen</label>
+            <select><option value="">—</option><option>Isokor, reagibel</option><option>Anisokor</option><option>Lichtstarr</option></select>
+          </div>
+          <div class="f"><label>GCS gesamt</label><input type="number" min="3" max="15" placeholder="3–15"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="sub-lbl" style="margin-bottom:4px;">Vitalzeichen-Verlauf</div>
+        <table class="vt">
+          <thead>
+            <tr>
+              <th>Zeit</th><th>RR syst.</th><th>RR diast.</th><th>Puls /min</th><th>SpO2 %</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="vt-time-cell"><input type="text" id="vt1_time"><button class="btn-now" onclick="setNow('vt1_time')">⏱1</button></div></td>
+              <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+            </tr>
+            <tr>
+              <td><div class="vt-time-cell"><input type="text" id="vt2_time"><button class="btn-now" onclick="setNow('vt2_time')">⏱2</button></div></td>
+              <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="divider"></div>
+        <div class="f"><label>Erstbefund Freitext / Anamnese (SAMPLER)</label>
+          <textarea style="min-height:46px;" placeholder="Weitere Befunde, klinischer Eindruck, Schmerzscore NRS …"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 VERLETZUNGEN -->
+    <div class="section" style="border-left-color:var(--c-verletz); flex:1; display:flex; flex-direction:column;">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-verletz);">05</span>
+        <span class="s-title">Verletzungen</span>
+      </div>
+      <div class="s-body" style="flex:1; display:flex; flex-direction:column;">
+        <div class="sub-lbl">Verletzungsart (Mehrfachauswahl)</div>
+        <div class="cg-lg">
+          <label class="ci-lg"><input type="checkbox"> Polytrauma</label>
+          <label class="ci-lg"><input type="checkbox"> SHT (V.a.)</label>
+          <label class="ci-lg"><input type="checkbox"> Thoraxtrauma</label>
+          <label class="ci-lg"><input type="checkbox"> Abdominaltrauma</label>
+          <label class="ci-lg"><input type="checkbox"> HWS-Trauma (V.a.)</label>
+          <label class="ci-lg"><input type="checkbox"> Amputation</label>
+          <label class="ci-lg"><input type="checkbox"> Avulsion</label>
+          <label class="ci-lg"><input type="checkbox"> Fraktur (V.a.)</label>
+          <label class="ci-lg"><input type="checkbox"> Verbrennung</label>
+          <label class="ci-lg"><input type="checkbox"> Prellung</label>
+          <label class="ci-lg"><input type="checkbox"> Augenverletzung</label>
+        </div>
+        <div class="divider"></div>
+        <div class="g2">
+          <div class="f"><label>Lokalisation</label><input type="text" placeholder="li. Unterschenkel, Kopf …"></div>
+          <div class="f"><label>Schmerzskala NRS 0–10</label><input type="number" min="0" max="10" placeholder="0–10"></div>
+        </div>
+        <div class="f" style="flex:1; display:flex; flex-direction:column; margin-top:6px;">
+          <label>Beschreibung / Besonderheiten</label>
+          <textarea style="flex:1; min-height:40px; resize:none; font-size:9.5px;" placeholder="Genaue Beschreibung …"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06 ERKRANKUNGEN -->
+    <div class="section" style="border-left-color:var(--c-erkrank); flex:1; display:flex; flex-direction:column;">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-erkrank);">06</span>
+        <span class="s-title">Erkrankungen / Vergiftungen</span>
+      </div>
+      <div class="s-body" style="flex:1; display:flex; flex-direction:column;">
+        <div class="sub-lbl">Verdachtsdiagnose (Mehrfachauswahl)</div>
+        <div class="cg-lg">
+          <label class="ci-lg"><input type="checkbox"> Herzstillstand</label>
+          <label class="ci-lg"><input type="checkbox"> ACS / Herzinfarkt (V.a.)</label>
+          <label class="ci-lg"><input type="checkbox"> Herzrhythmusstörung</label>
+          <label class="ci-lg"><input type="checkbox"> Schlaganfall (V.a.)</label>
+          <label class="ci-lg"><input type="checkbox"> Bewusstlosigkeit</label>
+          <label class="ci-lg"><input type="checkbox"> Vergiftung / Intoxikation</label>
+          <label class="ci-lg"><input type="checkbox"> Drogenintoxikation</label>
+          <label class="ci-lg"><input type="checkbox"> Alkoholintoxikation</label>
+          <label class="ci-lg"><input type="checkbox"> CO-Vergiftung</label>
+          <label class="ci-lg"><input type="checkbox"> Psychiatr. Notfall</label>
+          <label class="ci-lg"><input type="checkbox"> Päd. Notfall</label>
+        </div>
+        <div class="divider"></div>
+        <div class="f"><label>Substanz / Wirkstoff (bei Vergiftung)</label>
+          <input type="text" placeholder="Medikament, Stoff, Menge …">
+        </div>
+        <div class="f" style="flex:1; display:flex; flex-direction:column; margin-top:6px; padding-bottom:4px;">
+          <label>Beschreibung / Anamnese</label>
+          <textarea style="flex:1; min-height:40px; resize:none; font-size:9.5px;" placeholder="Symptombeginn, Verlauf, weitere Angaben …"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ ROW 3: Maßnahmen ══ -->
+  <div class="row">
+    <div class="section" style="border-left-color:var(--c-massn);">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-massn);">07</span>
+        <span class="s-title">Durchgeführte Maßnahmen</span>
+      </div>
+      <div class="s-body">
+        <div class="sub-lbl" style="margin-bottom:6px;">Maßnahmen (Mehrfachauswahl)</div>
+
+        <!-- Three colour-coded groups side by side -->
+        <div class="m-groups-row">
+
+          <!-- ROT: Kreislauf / Blut -->
+          <div class="m-group">
+            <div class="m-group-label rot">Kreislauf &amp; Blut</div>
+            <div class="cg-lg" style="margin-top:5px; flex-direction:column; gap:5px;">
+              <label class="ci-lg"><input type="checkbox"> Reanimation</label>
+              <label class="ci-lg"><input type="checkbox"> Defibrillation</label>
+              <label class="ci-lg"><input type="checkbox"> Venenzugang i.v.</label>
+              <label class="ci-lg"><input type="checkbox"> i.o.-Zugang</label>
+              <label class="ci-lg"><input type="checkbox"> Infusion</label>
+              <label class="ci-lg"><input type="checkbox"> Blutstillung / Druckverband</label>
+              <label class="ci-lg"><input type="checkbox"> Tourniquet</label>
+            </div>
+          </div>
+
+          <div class="m-sep"></div>
+
+          <!-- BLAU: Atmung -->
+          <div class="m-group">
+            <div class="m-group-label blau">Atmung &amp; Monitoring</div>
+            <div class="cg-lg" style="margin-top:5px; flex-direction:column; gap:5px;">
+              <label class="ci-lg"><input type="checkbox"> O2-Gabe</label>
+              <label class="ci-lg"><input type="checkbox"> Intubation</label>
+              <label class="ci-lg"><input type="checkbox"> Beatmung</label>
+              <label class="ci-lg"><input type="checkbox"> 12-Kanal-EKG</label>
+              <label class="ci-lg"><input type="checkbox"> Monitoring</label>
+            </div>
+          </div>
+
+          <div class="m-sep"></div>
+
+          <!-- GRÜN: Sonstiges -->
+          <div class="m-group">
+            <div class="m-group-label gruen">Versorgung &amp; Sonstiges</div>
+            <div class="cg-lg" style="margin-top:5px; flex-direction:column; gap:5px;">
+              <label class="ci-lg"><input type="checkbox"> Wundversorgung</label>
+              <label class="ci-lg"><input type="checkbox"> Immobilisation</label>
+              <label class="ci-lg"><input type="checkbox"> Vakuummatratze</label>
+              <label class="ci-lg"><input type="checkbox"> Wärmeerhalt</label>
+              <label class="ci-lg"><input type="checkbox"> Psychische Betreuung</label>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="divider" style="margin-top:6px;"></div>
+        <div class="g4">
+          <div class="f c3"><label>Medikamentengabe — Präparat · Dosis · Applikation · Zeit</label>
+            <textarea style="min-height:50px;" placeholder="Morphin 5 mg i.v. 10:32 – NRS 8→4&#10;Aspirin 500 mg p.o. 10:40 …"></textarea>
+          </div>
+          <div class="f"><label>Schockraum-Voranmeldung</label>
+            <select><option value="">—</option><option>Ja</option><option>Nein</option><option>Nicht erforderlich</option></select>
+          </div>
+          <div class="f c4"><label>Sonstige Maßnahmen / Besonderheiten</label>
+            <textarea style="min-height:36px;" placeholder="Weitere Maßnahmen, Besonderheiten im Einsatzverlauf …"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ROW 4: Transport · Ergebnis · Bemerkungen ══ -->
+  <div class="row">
+
+    <!-- 09 TRANSPORT -->
+    <div class="section" style="border-left-color:var(--c-transport); flex:0.9;">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-transport);">09</span>
+        <span class="s-title">Transport</span>
+      </div>
+      <div class="s-body">
+        <div class="g2">
+          <div class="f c2">
+            <label>Transportiert?</label>
+            <div class="rg" style="padding-top:3px;">
+              <label class="ri"><input type="radio" name="tr"> Ja</label>
+              <label class="ri"><input type="radio" name="tr"> Nein (verweigert)</label>
+              <label class="ri"><input type="radio" name="tr"> Vor Ort verstorben</label>
+              <label class="ri"><input type="radio" name="tr"> Arztvorst. vor Ort</label>
+            </div>
+          </div>
+          <div class="f"><label>Transportmittel</label>
+            <select><option value="">—</option><option>RTW</option><option>KTW</option><option>RTH</option><option>NAW</option></select>
+          </div>
+          <div class="f"><label>Abfahrtszeit</label><div class="vt-time-cell"><input type="text" id="abfahrt_time" placeholder="HH:MM"><button class="btn-now" onclick="setNow('abfahrt_time')">⏱ Zeit</button></div></div>
+          <div class="f c2"><label>Transportziel</label><input type="text" placeholder="Klinikum Muster, Notaufnahme"></div>
+          <div class="f"><label>Ankunft am Ziel</label><div class="vt-time-cell"><input type="text" id="ankunft_ziel_time" placeholder="HH:MM"><button class="btn-now" onclick="setNow('ankunft_ziel_time')">⏱ Zeit</button></div></div>
+          <div class="f c2"><label>Besonderheiten Transport</label>
+            <textarea style="min-height:44px;" placeholder="Monitoring, Beatmung, Nachforderungen …"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08 ERGEBNIS -->
+    <div class="section" style="border-left-color:var(--c-ergebnis); flex:1.2; display:flex; flex-direction:column;">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-ergebnis);">08</span>
+        <span class="s-title">Ergebnis &amp; Übergabe</span>
+      </div>
+      <div class="s-body" style="flex:1; display:flex; flex-direction:column;">
+        <div class="g4">
+          <div class="f c2"><label>Zustand bei Übergabe</label>
+            <select><option value="">—</option><option>Stabil, verbessert</option><option>Stabil, unverändert</option><option>Instabil</option><option>Reanimation laufend</option><option>Verstorben vor Ort</option><option>Verstorben Transport</option></select>
+          </div>
+          <div class="f c2"><label>Übergabe an</label>
+            <select><option value="">—</option><option>Notaufnahme</option><option>Schockraum</option><option>Notarzt vor Ort</option><option>Hausarzt</option><option>Angehörige / Pat. selbst</option></select>
+          </div>
+          <div class="f c2"><label>Übergebend an (Name Arzt / Personal)</label><input type="text" placeholder="Dr. Müller, Pflege N.N."></div>
+          <div class="f"><label>Übergabezeit</label><div class="vt-time-cell"><input type="text" id="uebergabe_time" placeholder="HH:MM"><button class="btn-now" onclick="setNow('uebergabe_time')">⏱ Zeit</button></div></div>
+          <div class="f"><label>Einsatzende</label><div class="vt-time-cell"><input type="text" id="einsatzende_time" placeholder="HH:MM"><button class="btn-now" onclick="setNow('einsatzende_time')">⏱ Zeit</button></div></div>
+        </div>
+        <div class="f" style="flex:1; display:flex; flex-direction:column; margin-top:6px; padding-bottom:6px;">
+          <label>Übergabebericht (SBAR / Freitext)</label>
+          <textarea style="flex:1; min-height:50px; resize:none;" placeholder="Situation · Background · Assessment · Recommendation …"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11 BEMERKUNGEN -->
+    <div class="section" style="border-left-color:var(--c-bemerk); flex:0.8;">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-bemerk);">11</span>
+        <span class="s-title">Sonstige Bemerkungen</span>
+      </div>
+      <div class="s-body">
+        <div class="f" style="flex:1;">
+          <label>Freitext / Interne Notizen</label>
+          <textarea style="min-height:95px;" placeholder="Sonstige Hinweise, Rückmeldungen, Qualitätssicherung …"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ ROW 5: Unterschriften ══ -->
+  <div class="row">
+    <div class="section" style="border-left-color:var(--c-sig);">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-sig);">10</span>
+        <span class="s-title">Unterschriften Einsatzpersonal</span>
+      </div>
+      <div class="s-body">
+        <div class="sig-grid">
+          <div class="sig-box">
+            <div class="f" style="margin-bottom:4px;">
+              <label>Protokollführer — Name &amp; Qualifikation</label>
+              <input type="text" placeholder="Vor- und Nachname, RA / NFS / NotSan …">
+            </div>
+            <div class="sig-lbl" style="margin-bottom:3px;">Unterschrift Protokollführer</div>
+            <div class="sig-author-wrap">
+              <textarea class="sig-author-input" rows="2" placeholder="Hier unterschreiben …" spellcheck="false"></textarea>
+            </div>
+            <span class="sig-hint">Groß und kursiv schreiben — wirkt wie eine Unterschrift</span>
+          </div>
+          <div class="sig-box">
+            <div class="f"><label>Mitarbeiter 1</label><input type="text" placeholder="Vor- und Nachname, Qualifikation"></div>
+          </div>
+          <div class="sig-box">
+            <div class="f"><label>Mitarbeiter 2</label><input type="text" placeholder="Vor- und Nachname, Qualifikation"></div>
+          </div>
+          <div class="sig-box">
+            <div class="f"><label>Notarzt (falls beteiligt)</label><input type="text" placeholder="Dr. Vor- und Nachname"></div>
+          </div>
+          <div class="sig-box">
+            <div class="f"><label>Patient / Angehörige (Einwilligung)</label><input type="text" placeholder="Name des Unterzeichners"></div>
+            <div class="f" style="margin-top:6px;">
+              <label>Beziehung zum Patienten</label>
+              <select>
+                <option value="">—</option>
+                <option>Patient selbst</option>
+                <option>Erziehungsberechtigte/r</option>
+                <option>Gesetzliche/r Betreuer/in</option>
+                <option>Angehörige/r</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ── Init: Datum + Alarmzeit ──
+(function() {
+  var now = new Date();
+  document.getElementById('einsatz_datum').value = now.toISOString().split('T')[0];
+  document.getElementById('alarmzeit').value =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+})();
+
+// ── Zeit-Buttons ──
+function setNow(id) {
+  var now = new Date();
+  document.getElementById(id).value =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+}
+
+// ── Theme (dark default) ──
+var dark = true;
+function toggleTheme() {
+  dark = !dark;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('theme-label').textContent = dark ? 'Hell' : 'Dunkel';
+  var icon = document.getElementById('theme-icon');
+  icon.innerHTML = dark
+    ? '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>'
+    : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+}
+
+// ── PDF Export: leere Felder mit -- füllen, Platzhalter ausblenden, Dateiname setzen ──
+function doPrint() {
+  var allInputs    = document.querySelectorAll('.main input[type="text"], .main input[type="number"]');
+  var allTextareas = document.querySelectorAll('.main textarea:not(.sig-author-input)');
+  var idInputs     = document.querySelectorAll('.id-strip input[type="text"]');
+  var changed = [];
+
+  function tempFill(el) {
+    if (el.value.trim() === '') {
+      el.value = '--';
+      changed.push({ el: el, orig: '' });
+    }
+  }
+  allInputs.forEach(tempFill);
+  allTextareas.forEach(tempFill);
+  idInputs.forEach(tempFill);
+
+  // Enr-Wert vor -- merken für Dateinamen
+  var enrEl   = document.getElementById('enr');
+  var datumEl = document.getElementById('einsatz_datum');
+  var enrVal  = changed.find(function(c){ return c.el === enrEl; }) ? 'oNr' : enrEl.value;
+  var datum   = datumEl.value || new Date().toISOString().split('T')[0];
+  var parts   = datum.split('-');
+  var datumStr = parts.length === 3 ? parts[2] + '.' + parts[1] + '.' + parts[0] : datum;
+
+  var origTitle = document.title;
+  document.title = 'Einsatzbericht ' + datumStr + ' ' + enrVal;
+
+  // Add class so CSS hides placeholders of still-filled fields
+  document.body.classList.add('printing');
+
+  window.print();
+
+  setTimeout(function() {
+    document.title = origTitle;
+    document.body.classList.remove('printing');
+    changed.forEach(function(item) { item.el.value = item.orig; });
+  }, 800);
+}
+
+// ── postMessage bridge ──
+window.addEventListener('message', function(e) {
+  var d = e.data;
+  if (!d || d.target !== 'protokol') return;
+  if (d.fn === 'toggleTheme') toggleTheme();
+  if (d.fn === 'doPrint')     doPrint();
+});
+</script>
+</body>
+</html>
