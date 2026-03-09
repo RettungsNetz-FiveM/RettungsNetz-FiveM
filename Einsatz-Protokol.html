@@ -750,7 +750,51 @@ function setNow(id) {
   el.focus();
 }
 
-// ── Theme (dark default) ──
+// ── PDF Export ──
+function doPrint() {
+  var allInputs    = document.querySelectorAll('.main input[type="text"]');
+  var allTextareas = document.querySelectorAll('.main textarea:not(.sig-author-input)');
+  var idInputs     = document.querySelectorAll('.id-strip input[type="text"]');
+  var changed = [];
+
+  function tempFill(el) {
+    if (el.value.trim() === '') {
+      el.value = '--';
+      changed.push({ el: el, orig: '' });
+    }
+  }
+  allInputs.forEach(tempFill);
+  allTextareas.forEach(tempFill);
+  idInputs.forEach(tempFill);
+
+  // Dateiname berechnen
+  var enrEl    = document.getElementById('enr');
+  var datumEl  = document.getElementById('einsatz_datum');
+  var enrVal   = (enrEl && enrEl.value.trim() && enrEl.value.trim() !== '--') ? enrEl.value.trim() : 'oNr';
+  var datum    = (datumEl && datumEl.value) ? datumEl.value : new Date().toISOString().split('T')[0];
+  var p        = datum.split('-');
+  var datumStr = p.length === 3 ? p[2]+'.'+p[1]+'.'+p[0] : datum;
+  var fileName = 'Einsatzprotokoll ' + datumStr + ' ' + enrVal;
+
+  // Eigenen Titel setzen
+  document.title = fileName;
+
+  // Parent-Titel setzen — 250ms warten damit Parent reagieren kann, DANN drucken
+  try { window.parent.postMessage({ type: 'proto-filename', fileName: fileName }, '*'); } catch(e) {}
+
+  document.body.classList.add('printing');
+  setTimeout(function() {
+    window.print();
+    function afterPrint() {
+      window.removeEventListener('afterprint', afterPrint);
+      document.body.classList.remove('printing');
+      changed.forEach(function(item) { item.el.value = item.orig; });
+    }
+    window.addEventListener('afterprint', afterPrint);
+  }, 250);
+}
+
+// ── Theme (null-safe) ──
 var dark = true;
 function toggleTheme() {
   dark = !dark;
@@ -763,49 +807,7 @@ function toggleTheme() {
     : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
 }
 
-// ── PDF Export ──
-function doPrint() {
-  var allInputs    = document.querySelectorAll('.main input[type="text"], .main input[type="number"]');
-  var allTextareas = document.querySelectorAll('.main textarea:not(.sig-author-input)');
-  var idInputs     = document.querySelectorAll('.id-strip input[type="text"]');
-  var changed = [];
-
-  function tempFill(el) {
-    if (el.type === 'date' || el.type === 'time') return;
-    if (el.value.trim() === '') {
-      el.value = '--';
-      changed.push({ el: el, orig: '' });
-    }
-  }
-  allInputs.forEach(tempFill);
-  allTextareas.forEach(tempFill);
-  idInputs.forEach(tempFill);
-
-  // Dateiname berechnen und an Parent senden
-  var enrEl    = document.getElementById('enr');
-  var datumEl  = document.getElementById('einsatz_datum');
-  var enrVal   = (enrEl && enrEl.value.trim() && enrEl.value.trim() !== '--') ? enrEl.value.trim() : 'oNr';
-  var datum    = (datumEl && datumEl.value) ? datumEl.value : new Date().toISOString().split('T')[0];
-  var p        = datum.split('-');
-  var datumStr = p.length === 3 ? p[2]+'.'+p[1]+'.'+p[0] : datum;
-  var fileName = 'Einsatzprotokoll ' + datumStr + ' ' + enrVal;
-
-  // Eigenen Titel setzen (falls direkt geöffnet, nicht im iframe)
-  document.title = fileName;
-
-  // Parent benachrichtigen (setzt dessen Titel für den Browser-Druckdialog)
-  try { window.parent.postMessage({ type: 'proto-print-ready', fileName: fileName }, '*'); } catch(e) {}
-
-  document.body.classList.add('printing');
-  window.print();
-
-  setTimeout(function() {
-    document.body.classList.remove('printing');
-    changed.forEach(function(item) { item.el.value = item.orig; });
-  }, 1000);
-}
-
-// ── postMessage bridge ──
+// ── postMessage bridge (nur 1 Listener) ──
 window.addEventListener('message', function(e) {
   var d = e.data;
   if (!d || d.target !== 'protokol') return;

@@ -556,7 +556,6 @@ function protoTheme() {
   document.getElementById('proto-theme-label').textContent = _protoDark ? 'Hell' : 'Dunkel';
 }
 function protoPrint() {
-  // iframe (doPrint) sendet proto-print-ready mit Dateiname → listener setzt document.title
   sendToFrame('frame-protokol', 'protokol', 'doPrint');
 }
 
@@ -602,11 +601,15 @@ window.addEventListener('message', e => {
     if (u) { u.disabled = !d.canUndo; u.style.opacity = d.canUndo ? '1' : '.35'; }
     if (r) { r.disabled = !d.canRedo; r.style.opacity = d.canRedo ? '1' : '.35'; }
   }
-  // Protokoll tells us the PDF filename just before printing
-  if (d.type === 'proto-print-ready' && d.fileName) {
-    const orig = document.title;
+  // Protokoll meldet Dateinamen — Titel setzen, nach Druck wiederherstellen
+  if (d.type === 'proto-filename' && d.fileName) {
+    const origTitle = document.title;
     document.title = d.fileName;
-    setTimeout(() => { document.title = orig; }, 2000);
+    function restoreTitle() {
+      window.removeEventListener('afterprint', restoreTitle);
+      document.title = origTitle;
+    }
+    window.addEventListener('afterprint', restoreTitle);
   }
 });
 </script>
