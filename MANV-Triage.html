@@ -500,11 +500,20 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
 
 <div class="toast" id="toast"></div>
 
-<!-- ══ FIREBASE ESM + APP LOGIC ══ -->
-<script type="module">
-import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getDatabase, ref, set, remove, onValue, off, onDisconnect }
-  from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+<!-- ══ FIREBASE COMPAT SDK ══ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/* Thin shims so the rest of the code works unchanged */
+function _initApp(cfg,name){return firebase.initializeApp(cfg,name);}
+function _getDb(app){return app.database();}
+function _ref(db,path){return db.ref(path);}
+function _set(r,v){return r.set(v);}
+function _remove(r){return r.remove();}
+function _onValue(r,cb){r.on('value',cb);return cb;}
+function _off(r,cb){try{r.off('value',cb);}catch(e){}}
+function _onDisconnect(r){return r.onDisconnect();}
+
 
 /* ── CONSTANTS ── */
 const CAT = {
@@ -580,26 +589,26 @@ async function doConnect(url){
   toast('Verbinde …','info');
   try {
     goOffline(true);
-    fbApp = initializeApp({databaseURL: url}, 'manv'+Date.now());
-    fbDb  = getDatabase(fbApp);
-    patRef  = ref(fbDb,'manv/patients');
-    presRef = ref(fbDb,'manv/presence/'+MY_ID);
-    lockRef = ref(fbDb,'manv/editing');
+    fbApp = _initApp({databaseURL: url}, 'manv'+Date.now());
+    fbDb  = _getDb(fbApp);
+    patRef  = _ref(fbDb,'manv/patients');
+    presRef = _ref(fbDb,'manv/presence/'+MY_ID);
+    lockRef = _ref(fbDb,'manv/editing');
 
     // Presence: register + auto-remove on disconnect
     await set(presRef, {at: Date.now()});
-    onDisconnect(presRef).remove();
+    _onDisconnect(presRef).remove();
 
     // Watch presence → user count
-    const allPresRef = ref(fbDb,'manv/presence');
-    const presListener = onValue(allPresRef, snap => {
+    const allPresRef = _ref(fbDb,'manv/presence');
+    const presListener = _onValue(allPresRef, snap => {
       const n = snap.val() ? Object.keys(snap.val()).length : 0;
       notifyParentMode(n);
     });
     listeners.push({r:allPresRef, fn:presListener});
 
     // Watch editing locks (who is editing what)
-    const lockListener = onValue(lockRef, snap => {
+    const lockListener = _onValue(lockRef, snap => {
       editingLocks = snap.val() || {};
       // Update lock badges on cards
       updateLockBadges();
@@ -611,7 +620,7 @@ async function doConnect(url){
     // Watch patients — selective realtime:
     // Only cat, done change trigger card UI changes via onValue
     // Full data only written on explicit Save
-    const patListener = onValue(patRef, snap => {
+    const patListener = _onValue(patRef, snap => {
       const data = snap.val();
       if(!data){ patients=[]; patN=0; }
       else {
@@ -636,9 +645,9 @@ async function doConnect(url){
 function goOffline(silent=false){
   // Release our editing lock if any
   if(editId) releaseEditLock(editId);
-  listeners.forEach(({r,fn})=>{ try{off(r,fn)}catch(e){} });
+  listeners.forEach(({r,fn})=>{ try{_off(r,fn)}catch(e){} });
   listeners=[];
-  if(fbDb && presRef) try{remove(presRef)}catch(e){}
+  if(fbDb && presRef) try{_remove(presRef)}catch(e){}
   fbApp=null; fbDb=null; patRef=null; presRef=null; lockRef=null;
   isOnline=false; editingLocks={};
   if(!silent){
@@ -651,8 +660,8 @@ function goOffline(silent=false){
 async function acquireEditLock(patId){
   if(!isOnline||!fbDb||!patId)return;
   try{
-    await set(ref(fbDb,'manv/editing/'+patId), MY_ID);
-    onDisconnect(ref(fbDb,'manv/editing/'+patId)).remove();
+    await _set(_ref(fbDb,'manv/editing/'+patId), MY_ID);
+    _onDisconnect(_ref(fbDb,'manv/editing/'+patId)).remove();
   }catch(e){}
 }
 async function releaseEditLock(patId){
@@ -660,7 +669,7 @@ async function releaseEditLock(patId){
   try{
     // Only release if we own it
     if(editingLocks[patId]===MY_ID){
-      await remove(ref(fbDb,'manv/editing/'+patId));
+      await _remove(_ref(fbDb,'manv/editing/'+patId));
     }
   }catch(e){}
 }
@@ -707,23 +716,23 @@ async function dbPushRealtimeFields(p){
     // their patients[] with the new data; card will re-render with new cat/done
     // NOTE: we do NOT write full data here — we only write cat+done+num for realtime fields
     // The rest of the patient data is only written on explicit Save
-    await set(ref(fbDb,'manv/patients/'+p.id+'/cat'), p.cat||null);
-    await set(ref(fbDb,'manv/patients/'+p.id+'/done'), p.done||false);
-    await set(ref(fbDb,'manv/patients/'+p.id+'/updatedAt'), p.updatedAt);
+    await _set(_ref(fbDb,'manv/patients/'+p.id+'/cat'), p.cat||null);
+    await _set(_ref(fbDb,'manv/patients/'+p.id+'/done'), p.done||false);
+    await _set(_ref(fbDb,'manv/patients/'+p.id+'/updatedAt'), p.updatedAt);
   }catch(e){toast('Sync-Fehler','err');}
 }
 // Full patient save (on Speichern button)
 async function dbSet(p){
   if(!isOnline||!fbDb)return;
-  try{ await set(ref(fbDb,'manv/patients/'+p.id), p); }catch(e){toast('Sync-Fehler','err');}
+  try{ await _set(_ref(fbDb,'manv/patients/'+p.id), p); }catch(e){toast('Sync-Fehler','err');}
 }
 async function dbDel(id){
   if(!isOnline||!fbDb)return;
-  try{ await remove(ref(fbDb,'manv/patients/'+id)); }catch(e){}
+  try{ await _remove(_ref(fbDb,'manv/patients/'+id)); }catch(e){}
 }
 async function dbClear(){
   if(!isOnline||!fbDb)return;
-  try{ await remove(ref(fbDb,'manv/patients')); }catch(e){}
+  try{ await _remove(_ref(fbDb,'manv/patients')); }catch(e){}
 }
 
 /* ── MED TABLE ── */
