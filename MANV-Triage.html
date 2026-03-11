@@ -500,20 +500,71 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
 
 <div class="toast" id="toast"></div>
 
-<!-- ══ FIREBASE COMPAT SDK ══ -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<!-- ══ APP LOGIC (Firebase REST API — kein SDK nötig) ══ -->
 <script>
-/* Thin shims so the rest of the code works unchanged */
-function _initApp(cfg,name){return firebase.initializeApp(cfg,name);}
-function _getDb(app){return app.database();}
-function _ref(db,path){return db.ref(path);}
-function _set(r,v){return r.set(v);}
-function _remove(r){return r.remove();}
-function _onValue(r,cb){r.on('value',cb);return cb;}
-function _off(r,cb){try{r.off('value',cb);}catch(e){}}
-function _onDisconnect(r){return r.onDisconnect();}
 
+/* ════════════════════════════════════════════════════
+   FIREBASE REST API WRAPPER
+   Verwendet nur fetch() — kein SDK, kein import, kein module
+   Realtime via Server-Sent Events (EventSource / SSE)
+   ════════════════════════════════════════════════════ */
+
+const FB_BASE = 'https://rettungsnetz-default-rtdb.europe-west1.firebasedatabase.app';
+
+// GET: fetch JSON from path
+async function fbGet(path){
+  const r = await fetch(FB_BASE+path+'.json');
+  if(!r.ok) throw new Error('GET '+path+' → '+r.status);
+  return r.json();
+}
+// SET: PUT (overwrite)
+async function fbSet(path, data){
+  const r = await fetch(FB_BASE+path+'.json', {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  if(!r.ok) throw new Error('SET '+path+' → '+r.status);
+}
+// PATCH: update specific fields
+async function fbPatch(path, data){
+  const r = await fetch(FB_BASE+path+'.json', {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  if(!r.ok) throw new Error('PATCH '+path+' → '+r.status);
+}
+// DELETE
+async function fbDel(path){
+  const r = await fetch(FB_BASE+path+'.json', {method:'DELETE'});
+  if(!r.ok) throw new Error('DEL '+path+' → '+r.status);
+}
+
+// SSE listener — Firebase supports ?stream=true for realtime updates
+let ssePatients = null;
+let ssePresence = null;
+let sseLocks    = null;
+
+function fbListen(path, onData){
+  const url = FB_BASE + path + '.json?stream=true';
+  const es = new EventSource(url);
+  es.addEventListener('put', e => {
+    try{
+      const msg = JSON.parse(e.data);
+      onData(msg.data);
+    }catch(err){}
+  });
+  es.addEventListener('patch', e => {
+    try{
+      const msg = JSON.parse(e.data);
+      onData(msg.data, true); // partial patch
+    }catch(err){}
+  });
+  es.onerror = () => {}; // silent reconnect
+  return es;
+}
+function fbUnlisten(es){
+  try{ if(es) es.close(); }catch(e){}
+}
 
 /* ── CONSTANTS ── */
 const CAT = {
@@ -539,150 +590,118 @@ const TXT = ['f-name','f-dob','f-fundort','f-findtime','f-puls','f-rr','f-spo2',
              'f-hauptv','f-befund','f-massn-extra','f-kh','f-transportzeit','f-bemerk'];
 const SEL = ['f-sex','f-atemweg','f-atmung','f-kreislauf','f-gcs','f-mech','f-transport','f-schockraum'];
 const MED_OPTS = '<option value="">—</option><option>Intravenöser Zugang (I.V.)</option><option>Intraossärer Zugang (I.O.)</option><option>Oral (p.o.)</option><option>Inhalativ</option><option>Subkutan (s.c.)</option>';
-const FB_KEY = 'rettungsnetz_fb_url';
-const MY_ID  = 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,4);
+const MY_ID = 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,4);
 
 /* ── STATE ── */
 let patients=[], editId=null, catF='all', trF='all', selCat=null, isDone=false, patN=0;
-let fbDb=null, fbApp=null, patRef=null, presRef=null, lockRef=null;
-let listeners=[], isOnline=false;
-// editingLocks: { patientId: userId } — who is editing what (realtime)
-let editingLocks={};
+let isOnline=false, editingLocks={};
+let sseP=null, sseL=null; // SSE connections
 
-/* ── localStorage helpers ── */
-const lsGet = k => { try{return localStorage.getItem(k)||''}catch(e){return''} };
-const lsSet = (k,v)=> { try{localStorage.setItem(k,v)}catch(e){} };
-
-/* ── NOTIFY PARENT (mode + user count) ── */
+/* ── NOTIFY PARENT ── */
 function notifyParentMode(users){
-  try{
-    window.parent.postMessage({
-      type:'manv-mode',
-      online: isOnline,
-      users: isOnline ? users : undefined
-    },'*');
-  }catch(e){}
+  try{ window.parent.postMessage({type:'manv-mode',online:isOnline,users:isOnline?users:undefined},'*'); }catch(e){}
 }
 
-/* ── FIREBASE CONNECT ── */
-// Called from index.html via postMessage
+/* ── MODE SWITCH ── */
 window.handleModeSwitch = () => {
   if(isOnline){
     if(!confirm('Online-Modus verlassen?\nDaten bleiben in Firebase gespeichert.'))return;
     goOffline();
   } else {
-    const saved = lsGet(FB_KEY);
-    if(saved){ document.getElementById('fb-url').value=saved; doConnect(saved); }
-    else      { document.getElementById('dlg-ov').classList.add('open'); }
+    doConnect();
   }
 };
 window.closeDlg = () => document.getElementById('dlg-ov').classList.remove('open');
-window.connectFB = () => {
-  let url = (document.getElementById('fb-url').value||'').trim();
-  if(!url){toast('Bitte Firebase URL eingeben!','err');return;}
-  if(!url.startsWith('http')) url='https://'+url;
-  window.closeDlg();
-  doConnect(url);
-};
+window.connectFB = () => { window.closeDlg(); doConnect(); };
 
-async function doConnect(url){
+async function doConnect(){
   toast('Verbinde …','info');
-  try {
-    goOffline(true);
-    fbApp = _initApp({databaseURL: url}, 'manv'+Date.now());
-    fbDb  = _getDb(fbApp);
-    patRef  = _ref(fbDb,'manv/patients');
-    presRef = _ref(fbDb,'manv/presence/'+MY_ID);
-    lockRef = _ref(fbDb,'manv/editing');
+  try{
+    // Test connection
+    await fbGet('/manv/patients');
 
-    // Presence: register + auto-remove on disconnect
-    await set(presRef, {at: Date.now()});
-    _onDisconnect(presRef).remove();
+    // Register presence
+    await fbSet('/manv/presence/'+MY_ID, {at: Date.now()});
+    // Best-effort cleanup on page unload
+    window.addEventListener('beforeunload', ()=>{
+      navigator.sendBeacon(FB_BASE+'/manv/presence/'+MY_ID+'.json', 'null');
+    }, {once:true});
 
-    // Watch presence → user count
-    const allPresRef = _ref(fbDb,'manv/presence');
-    const presListener = _onValue(allPresRef, snap => {
-      const n = snap.val() ? Object.keys(snap.val()).length : 0;
-      notifyParentMode(n);
-    });
-    listeners.push({r:allPresRef, fn:presListener});
-
-    // Watch editing locks (who is editing what)
-    const lockListener = _onValue(lockRef, snap => {
-      editingLocks = snap.val() || {};
-      // Update lock badges on cards
-      updateLockBadges();
-      // If we have a modal open, update the lock warning
-      updateModalLockWarning();
-    });
-    listeners.push({r:lockRef, fn:lockListener});
-
-    // Watch patients — selective realtime:
-    // Only cat, done change trigger card UI changes via onValue
-    // Full data only written on explicit Save
-    const patListener = _onValue(patRef, snap => {
-      const data = snap.val();
-      if(!data){ patients=[]; patN=0; }
-      else {
-        patients = Object.values(data).sort((a,b)=>(a.num||0)-(b.num||0));
+    // SSE: watch patients
+    sseP = fbListen('/manv/patients', (data, patch) => {
+      if(data === null){ patients=[]; patN=0; }
+      else if(patch){
+        // Partial update — merge into patients
+        if(data) Object.keys(data).forEach(id=>{
+          const i=patients.findIndex(p=>p.id===id);
+          if(data[id]===null){ patients=patients.filter(p=>p.id!==id); }
+          else if(i>=0){ patients[i]={...patients[i],...data[id]}; }
+          else{ patients.push(data[id]); patients.sort((a,b)=>(a.num||0)-(b.num||0)); }
+        });
+      } else {
+        patients = data ? Object.values(data).sort((a,b)=>(a.num||0)-(b.num||0)) : [];
         patN = patients.reduce((m,p)=>Math.max(m,p.num||0),0);
       }
       render();
     });
-    listeners.push({r:patRef, fn:patListener});
+
+    // SSE: watch editing locks
+    sseL = fbListen('/manv/editing', (data) => {
+      editingLocks = data || {};
+      updateLockBadges();
+      updateModalLockWarning();
+    });
+
+    // Poll presence count every 10s
+    async function pollPresence(){
+      if(!isOnline) return;
+      try{
+        const d = await fbGet('/manv/presence');
+        const n = d ? Object.keys(d).length : 0;
+        notifyParentMode(n);
+      }catch(e){}
+      setTimeout(pollPresence, 10000);
+    }
+    pollPresence();
 
     isOnline = true;
-    lsSet(FB_KEY, url);
-    toast('🔥 Online! Triage-Status & Transport werden live synchronisiert.','ok');
-  } catch(e) {
+    toast('🔥 Online! Live-Sync aktiv.','ok');
+    notifyParentMode(1);
+  }catch(e){
     console.error(e);
-    toast('Verbindungsfehler: '+(e.message||String(e)),'err');
+    toast('Verbindungsfehler: '+e.message,'err');
     goOffline(true);
-    notifyParentMode(0);
   }
 }
 
 function goOffline(silent=false){
-  // Release our editing lock if any
   if(editId) releaseEditLock(editId);
-  listeners.forEach(({r,fn})=>{ try{_off(r,fn)}catch(e){} });
-  listeners=[];
-  if(fbDb && presRef) try{_remove(presRef)}catch(e){}
-  fbApp=null; fbDb=null; patRef=null; presRef=null; lockRef=null;
+  fbUnlisten(sseP); sseP=null;
+  fbUnlisten(sseL); sseL=null;
+  // Remove presence
+  try{ fbDel('/manv/presence/'+MY_ID); }catch(e){}
   isOnline=false; editingLocks={};
-  if(!silent){
-    toast('Offline — Lokaler Modus aktiv','info');
-  }
+  if(!silent) toast('Lokaler Modus aktiv','info');
   notifyParentMode(0);
 }
 
 /* ── EDITING LOCKS ── */
 async function acquireEditLock(patId){
-  if(!isOnline||!fbDb||!patId)return;
-  try{
-    await _set(_ref(fbDb,'manv/editing/'+patId), MY_ID);
-    _onDisconnect(_ref(fbDb,'manv/editing/'+patId)).remove();
-  }catch(e){}
+  if(!isOnline||!patId)return;
+  try{ await fbSet('/manv/editing/'+patId, MY_ID); }catch(e){}
 }
 async function releaseEditLock(patId){
-  if(!isOnline||!fbDb||!patId)return;
-  try{
-    // Only release if we own it
-    if(editingLocks[patId]===MY_ID){
-      await _remove(_ref(fbDb,'manv/editing/'+patId));
-    }
-  }catch(e){}
+  if(!isOnline||!patId)return;
+  try{ if(editingLocks[patId]===MY_ID) await fbDel('/manv/editing/'+patId); }catch(e){}
 }
 function isLockedByOther(patId){
   if(!isOnline)return false;
-  const locker=editingLocks[patId];
-  return locker && locker!==MY_ID;
+  const l=editingLocks[patId];
+  return l && l!==MY_ID;
 }
 function updateLockBadges(){
-  // Add/remove lock badges on all rendered cards
   document.querySelectorAll('.pat-card[data-pid]').forEach(card=>{
-    const pid=card.dataset.pid;
-    const locked=isLockedByOther(pid);
+    const pid=card.dataset.pid, locked=isLockedByOther(pid);
     card.classList.toggle('being-edited',locked);
     let badge=card.querySelector('.edit-lock-badge');
     if(locked&&!badge){
@@ -690,72 +709,49 @@ function updateLockBadges(){
       badge.className='edit-lock-badge';
       badge.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>In Bearbeitung';
       card.appendChild(badge);
-    } else if(!locked&&badge){
-      badge.remove();
-      card.classList.remove('being-edited');
-    }
+    } else if(!locked&&badge){ badge.remove(); }
   });
 }
 function updateModalLockWarning(){
-  if(!editId) return;
-  const warn=document.getElementById('lock-warning');
-  if(!warn) return;
-  if(isLockedByOther(editId)){
-    warn.classList.add('show');
-  } else {
-    warn.classList.remove('show');
-  }
+  if(!editId)return;
+  const w=document.getElementById('lock-warning');
+  if(w) w.classList.toggle('show', isLockedByOther(editId));
 }
 
-/* ── REALTIME-ONLY SYNC (cat + done) ── */
-// When cat or done changes locally, push ONLY those fields immediately
-async function dbPushRealtimeFields(p){
-  if(!isOnline||!fbDb)return;
-  try{
-    // Set the full patient — Firebase onValue on other clients will update
-    // their patients[] with the new data; card will re-render with new cat/done
-    // NOTE: we do NOT write full data here — we only write cat+done+num for realtime fields
-    // The rest of the patient data is only written on explicit Save
-    await _set(_ref(fbDb,'manv/patients/'+p.id+'/cat'), p.cat||null);
-    await _set(_ref(fbDb,'manv/patients/'+p.id+'/done'), p.done||false);
-    await _set(_ref(fbDb,'manv/patients/'+p.id+'/updatedAt'), p.updatedAt);
-  }catch(e){toast('Sync-Fehler','err');}
-}
-// Full patient save (on Speichern button)
+/* ── DB OPS ── */
 async function dbSet(p){
-  if(!isOnline||!fbDb)return;
-  try{ await _set(_ref(fbDb,'manv/patients/'+p.id), p); }catch(e){toast('Sync-Fehler','err');}
+  if(!isOnline)return;
+  try{ await fbSet('/manv/patients/'+p.id, p); }catch(e){toast('Sync-Fehler','err');}
+}
+async function dbPushRealtimeFields(p){
+  if(!isOnline)return;
+  try{ await fbPatch('/manv/patients/'+p.id, {cat:p.cat||null,done:p.done||false,updatedAt:p.updatedAt}); }catch(e){toast('Sync-Fehler','err');}
 }
 async function dbDel(id){
-  if(!isOnline||!fbDb)return;
-  try{ await _remove(_ref(fbDb,'manv/patients/'+id)); }catch(e){}
+  if(!isOnline)return;
+  try{ await fbDel('/manv/patients/'+id); }catch(e){}
 }
 async function dbClear(){
-  if(!isOnline||!fbDb)return;
-  try{ await _remove(_ref(fbDb,'manv/patients')); }catch(e){}
+  if(!isOnline)return;
+  try{ await fbDel('/manv/patients'); }catch(e){}
 }
 
 /* ── MED TABLE ── */
 function makeMedRow(med='',app='',time='',name=''){
   const tr=document.createElement('tr');
-  tr.innerHTML=
-    '<td><input type="text" value="'+esc(med)+'" placeholder="Morphin 5mg" autocomplete="off"></td>'+
+  tr.innerHTML='<td><input type="text" value="'+esc(med)+'" placeholder="Morphin 5mg" autocomplete="off"></td>'+
     '<td><select class="vt-sel">'+MED_OPTS+'</select></td>'+
     '<td><div class="vtc"><input type="text" value="'+esc(time)+'" placeholder="HH:MM" autocomplete="off"><button class="btn-now" onclick="setNowMed(this)">⏱</button></div></td>'+
     '<td><input type="text" value="'+esc(name)+'" placeholder="Name" autocomplete="off"></td>';
   if(app)tr.querySelector('select').value=app;
   return tr;
 }
-function resetMed(){
-  const tb=document.getElementById('med-tbody');tb.innerHTML='';
-  tb.appendChild(makeMedRow()); tb.appendChild(makeMedRow());
-}
-window.addMedRow   = ()=>document.getElementById('med-tbody').appendChild(makeMedRow());
-window.setNowMed   = btn=>{ const i=btn.previousElementSibling; if(i){const n=new Date();i.value=p2(n.getHours())+':'+p2(n.getMinutes());} };
+function resetMed(){const tb=document.getElementById('med-tbody');tb.innerHTML='';tb.appendChild(makeMedRow());tb.appendChild(makeMedRow());}
+window.addMedRow=()=>document.getElementById('med-tbody').appendChild(makeMedRow());
+window.setNowMed=btn=>{const i=btn.previousElementSibling;if(i){const n=new Date();i.value=p2(n.getHours())+':'+p2(n.getMinutes());}};
 function readMed(){
-  return [...document.querySelectorAll('#med-tbody tr')].map(tr=>{
-    const ins=tr.querySelectorAll('input[type=text]');
-    const sel=tr.querySelector('select');
+  return[...document.querySelectorAll('#med-tbody tr')].map(tr=>{
+    const ins=tr.querySelectorAll('input[type=text]'),sel=tr.querySelector('select');
     return{med:ins[0]?.value.trim()||'',app:sel?.value||'',time:ins[1]?.value.trim()||'',name:ins[2]?.value.trim()||''};
   }).filter(r=>r.med||r.app||r.time||r.name);
 }
@@ -769,12 +765,11 @@ function loadMed(rows){
 /* ── DONE TOGGLE ── */
 function setDoneUI(v){
   isDone=!!v;
-  const btn=document.getElementById('done-btn');
-  const lbl=document.getElementById('done-lbl');
+  const btn=document.getElementById('done-btn'),lbl=document.getElementById('done-lbl');
   if(isDone){btn.style.cssText='background:rgba(82,183,136,.12);border-color:#52b788;color:#52b788;';lbl.textContent='Abtransportiert ✓';}
-  else      {btn.style.cssText='';lbl.textContent='Nicht abtransportiert';}
+  else{btn.style.cssText='';lbl.textContent='Nicht abtransportiert';}
 }
-window.toggleDone = ()=>setDoneUI(!isDone);
+window.toggleDone=()=>setDoneUI(!isDone);
 
 /* ── MODAL ── */
 window.openNew=()=>{
@@ -794,19 +789,17 @@ window.openEdit=id=>{
   document.getElementById('m-sub').textContent=p.name||'Unbekannt';
   document.getElementById('exp-btn').style.display='flex';
   document.getElementById('m-stripe').style.background=p.cat?CAT[p.cat].color:'#1e2a3a';
-  // Show lock warning if someone else is editing
   updateModalLockWarning();
   document.getElementById('modal-ov').classList.add('open');
-  // Acquire editing lock
   acquireEditLock(id);
 };
 window.closeModal=()=>{
-  if(editId) releaseEditLock(editId);
+  if(editId)releaseEditLock(editId);
   document.getElementById('modal-ov').classList.remove('open');
   document.getElementById('lock-warning').classList.remove('show');
   editId=null;
 };
-window.ovClick=e=>{ if(e.target===document.getElementById('modal-ov'))window.closeModal(); };
+window.ovClick=e=>{if(e.target===document.getElementById('modal-ov'))window.closeModal();};
 window.selCat=c=>{
   selCat=c;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
@@ -836,48 +829,41 @@ function readF(){
   const obj={cat:selCat,checks,done:isDone,medRows:readMed()};
   TXT.forEach(id=>obj[id]=gv(id));
   SEL.forEach(id=>obj[id]=gv(id));
-  obj.name=obj['f-name']; obj.dob=obj['f-dob']; obj.sex=obj['f-sex'];
-  obj.fundort=obj['f-fundort']; obj.findtime=obj['f-findtime'];
-  obj.puls=obj['f-puls']; obj.rr=obj['f-rr']; obj.spo2=obj['f-spo2'];
-  obj.gcs=obj['f-gcs'];   obj.hauptv=obj['f-hauptv']; obj.befund=obj['f-befund'];
+  obj.name=obj['f-name'];obj.dob=obj['f-dob'];obj.sex=obj['f-sex'];
+  obj.fundort=obj['f-fundort'];obj.findtime=obj['f-findtime'];
+  obj.puls=obj['f-puls'];obj.rr=obj['f-rr'];obj.spo2=obj['f-spo2'];
+  obj.gcs=obj['f-gcs'];obj.hauptv=obj['f-hauptv'];obj.befund=obj['f-befund'];
   obj.massnahmen=checks.map(id=>CB_MAP[id]);
   return obj;
 }
 
 window.savePatient=async()=>{
   if(!selCat){toast('Bitte Triage-Kategorie wählen!','err');return;}
-  const data=readF(), ts=stamp();
+  const data=readF(),ts=stamp();
   let saved;
   if(editId){
     const i=patients.findIndex(p=>p.id===editId);
     if(i>=0){patients[i]={...patients[i],...data,updatedAt:ts};saved=patients[i];}
-    toast('Patient gespeichert — alle sehen die Änderungen','ok');
-  } else {
+    toast('Patient gespeichert','ok');
+  }else{
     patN++;
     saved={id:uid(),num:patN,createdAt:ts,updatedAt:ts,...data};
     patients.push(saved);
     toast('Patient erfasst','ok');
   }
-  // Release lock before saving
-  if(editId) await releaseEditLock(editId);
+  if(editId)await releaseEditLock(editId);
   window.closeModal();
-  // Full save to Firebase (content only synced on save)
-  if(saved) await dbSet(saved);
-  if(!isOnline) render();
+  if(saved)await dbSet(saved);
+  if(!isOnline)render();
 };
 
-// quickDone: transport status is realtime — push immediately to all
 window.quickDone=async(id,e)=>{
   e.stopPropagation();
   const i=patients.findIndex(p=>p.id===id);if(i<0)return;
-  patients[i].done=!patients[i].done; patients[i].updatedAt=stamp();
+  patients[i].done=!patients[i].done;patients[i].updatedAt=stamp();
   toast(patients[i].done?'Abtransportiert ✓':'Zurückgesetzt','ok');
-  if(isOnline){
-    // Push only realtime fields (done + cat)
-    await dbPushRealtimeFields(patients[i]);
-  } else {
-    render();
-  }
+  if(isOnline){ await dbPushRealtimeFields(patients[i]); }
+  else render();
 };
 
 /* ── FILTER ── */
@@ -907,31 +893,26 @@ function getVis(){
 /* ── RENDER ── */
 function render(){
   stats();
-  const list=document.getElementById('plist'); list.innerHTML='';
+  const list=document.getElementById('plist');list.innerHTML='';
   const vis=getVis();
-  const empty=document.getElementById('empty'), grid=document.getElementById('grid');
+  const empty=document.getElementById('empty'),grid=document.getElementById('grid');
   if(!patients.length){empty.style.display='flex';grid.style.display='none';}
   else{empty.style.display='none';grid.style.display='grid';}
-
   vis.forEach(p=>{
     const m=p.cat?CAT[p.cat]:{color:'var(--dim)',label:'?',roman:'?',bg:'transparent'};
     const li=document.createElement('div');
     li.className='pl-item'+(p.done?' done':'');
     li.onclick=()=>window.openEdit(p.id);
-    li.innerHTML=
-      '<div class="pl-bar" style="background:'+(p.done?'var(--grn)':m.color)+'"></div>'+
+    li.innerHTML='<div class="pl-bar" style="background:'+(p.done?'var(--grn)':m.color)+'"></div>'+
       '<div class="pl-info"><div class="pl-num">#'+pad(p.num)+'</div>'+
-        '<div class="pl-name'+(p.name?'':' unk')+'">'+(p.name||'Unbekannt')+'</div>'+
-        '<div class="pl-sub">'+(p.fundort||'—')+' · '+(p.createdAt||'')+'</div></div>'+
-      (p.done
-        ? '<span class="pl-badge" style="background:rgba(82,183,136,.12);color:var(--grn);border:1px solid rgba(82,183,136,.3)">✓ Trans.</span>'
-        : '<span class="pl-badge" style="background:'+m.bg+';color:'+m.color+';border:1px solid '+m.color+'33">'+m.roman+'</span>');
+      '<div class="pl-name'+(p.name?'':' unk')+'">'+(p.name||'Unbekannt')+'</div>'+
+      '<div class="pl-sub">'+(p.fundort||'—')+' · '+(p.createdAt||'')+'</div></div>'+
+      (p.done?'<span class="pl-badge" style="background:rgba(82,183,136,.12);color:var(--grn);border:1px solid rgba(82,183,136,.3)">✓ Trans.</span>':
+              '<span class="pl-badge" style="background:'+m.bg+';color:'+m.color+';border:1px solid '+m.color+'33">'+m.roman+'</span>');
     list.appendChild(li);
   });
-
   grid.innerHTML='';
   vis.forEach(p=>grid.appendChild(buildCard(p)));
-  // Re-apply lock badges after render
   updateLockBadges();
 }
 
@@ -944,32 +925,31 @@ function buildCard(p){
   const doneBar=p.done?'<div class="done-stamp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>Abtransportiert — Abgeschlossen</div>':'';
   el.innerHTML=doneBar+
     '<div class="pat-head" onclick="openEdit(\''+p.id+'\')">'+
-      '<div class="pat-stripe" style="background:'+(p.done?'var(--grn)':m.color)+'"></div>'+
-      '<div class="pat-numbox"><div class="pat-num">'+pad(p.num)+'</div><div class="pat-num-lbl">Pat-Nr</div></div>'+
-      '<div class="pat-info"><div class="pat-name'+(p.name?'':' unk')+'">'+(p.name||'Unbekannt')+'</div>'+
-        '<div class="pat-dob">'+[p.dob,p.sex,p.fundort].filter(Boolean).join(' · ')+'</div></div>'+
-      '<div class="pat-catbox" style="background:'+m.bg+'">'+
-        '<div class="pat-roman" style="color:'+(p.done?'var(--grn)':m.color)+'">'+m.roman+'</div>'+
-        '<div class="pat-catlbl" style="color:'+(p.done?'var(--grn)':m.color)+'">'+m.label+'</div></div></div>'+
+    '<div class="pat-stripe" style="background:'+(p.done?'var(--grn)':m.color)+'"></div>'+
+    '<div class="pat-numbox"><div class="pat-num">'+pad(p.num)+'</div><div class="pat-num-lbl">Pat-Nr</div></div>'+
+    '<div class="pat-info"><div class="pat-name'+(p.name?'':' unk')+'">'+(p.name||'Unbekannt')+'</div>'+
+    '<div class="pat-dob">'+[p.dob,p.sex,p.fundort].filter(Boolean).join(' · ')+'</div></div>'+
+    '<div class="pat-catbox" style="background:'+m.bg+'">'+
+    '<div class="pat-roman" style="color:'+(p.done?'var(--grn)':m.color)+'">'+m.roman+'</div>'+
+    '<div class="pat-catlbl" style="color:'+(p.done?'var(--grn)':m.color)+'">'+m.label+'</div></div></div>'+
     '<div class="pat-body"><div class="vitals">'+
-      '<div class="vc"><div class="vc-l">GCS</div><div class="vc-v">'+(p.gcs||'—')+'</div></div>'+
-      '<div class="vc"><div class="vc-l">SpO₂</div><div class="vc-v">'+(p.spo2?p.spo2+'%':'—')+'</div></div>'+
-      '<div class="vc"><div class="vc-l">Puls</div><div class="vc-v">'+(p.puls?p.puls+'/min':'—')+'</div></div>'+
-      '<div class="vc"><div class="vc-l">RR</div><div class="vc-v">'+(p.rr||'—')+'</div></div></div>'+
-      '<div class="pat-diag'+((!p.hauptv&&!p.befund)?' empty':'')+'">'+
-        (p.hauptv?'<b style="color:var(--white)">'+p.hauptv+'</b>'+(p.befund?' — ':''):'')+
-        (p.befund||(p.hauptv?'':'Keine Beschreibung erfasst'))+'</div></div>'+
+    '<div class="vc"><div class="vc-l">GCS</div><div class="vc-v">'+(p.gcs||'—')+'</div></div>'+
+    '<div class="vc"><div class="vc-l">SpO₂</div><div class="vc-v">'+(p.spo2?p.spo2+'%':'—')+'</div></div>'+
+    '<div class="vc"><div class="vc-l">Puls</div><div class="vc-v">'+(p.puls?p.puls+'/min':'—')+'</div></div>'+
+    '<div class="vc"><div class="vc-l">RR</div><div class="vc-v">'+(p.rr||'—')+'</div></div></div>'+
+    '<div class="pat-diag'+((!p.hauptv&&!p.befund)?' empty':'')+'">'+
+    (p.hauptv?'<b style="color:var(--white)">'+p.hauptv+'</b>'+(p.befund?' — ':''):'')+
+    (p.befund||(p.hauptv?'':'Keine Beschreibung erfasst'))+'</div></div>'+
     '<div class="pat-foot">'+
-      '<div class="pat-ftime">'+(p.findtime?'⏱ '+p.findtime:'')+' '+(p.createdAt?'· '+p.createdAt:'')+'</div>'+
-      '<div class="pat-tags">'+tags+((p.massnahmen||[]).length>3?'<span class="ptag" style="background:var(--sf3);color:var(--dim)">+'+(p.massnahmen.length-3)+'</span>':'')+'</div>'+
-      '<div class="pat-actions">'+
-        (p.done
-          ? '<button class="cbtn ab" onclick="quickDone(\''+p.id+'\',event)">↺ Aktiv</button>'
-          : '<button class="cbtn gb" onclick="quickDone(\''+p.id+'\',event)">✓ Abtr.</button>')+
-        '<button class="cbtn" onclick="event.stopPropagation();expById(\''+p.id+'\')">↓</button>'+
-        '<button class="cbtn" onclick="event.stopPropagation();delPat(\''+p.id+'\')" style="color:var(--red)">✕</button>'+
-        '<button class="cbtn" onclick="openEdit(\''+p.id+'\')">Bearbeiten</button>'+
-      '</div></div>';
+    '<div class="pat-ftime">'+(p.findtime?'⏱ '+p.findtime:'')+' '+(p.createdAt?'· '+p.createdAt:'')+'</div>'+
+    '<div class="pat-tags">'+tags+((p.massnahmen||[]).length>3?'<span class="ptag" style="background:var(--sf3);color:var(--dim)">+'+(p.massnahmen.length-3)+'</span>':'')+'</div>'+
+    '<div class="pat-actions">'+
+    (p.done?'<button class="cbtn ab" onclick="quickDone(\''+p.id+'\',event)">↺ Aktiv</button>':
+            '<button class="cbtn gb" onclick="quickDone(\''+p.id+'\',event)">✓ Abtr.</button>')+
+    '<button class="cbtn" onclick="event.stopPropagation();expById(\''+p.id+'\')">↓</button>'+
+    '<button class="cbtn" onclick="event.stopPropagation();delPat(\''+p.id+'\')" style="color:var(--red)">✕</button>'+
+    '<button class="cbtn" onclick="openEdit(\''+p.id+'\')">Bearbeiten</button>'+
+    '</div></div>';
   return el;
 }
 
@@ -979,9 +959,7 @@ function stats(){
   const s=id=>document.getElementById(id);
   s('n-all').textContent=patients.length;
   ['I','II','III','IV','X'].forEach(k=>s('n-'+k).textContent=c[k]);
-  s('nt-all').textContent=patients.length;
-  s('nt-open').textContent=open;
-  s('nt-done').textContent=done;
+  s('nt-all').textContent=patients.length;s('nt-open').textContent=open;s('nt-done').textContent=done;
   try{window.parent.postMessage({type:'manv-stats',total:patients.length,...c},'*');}catch(e){}
 }
 
@@ -1011,16 +989,13 @@ async function doImport(data){
   const cnt=data.patients.length;
   if(data.type==='manv-full'){
     if(!confirm('Vollständig importieren?\n'+patients.length+' aktuelle → '+cnt+' importierte ersetzen.'))return;
-    patients=data.patients; patN=data.patN||Math.max(0,...patients.map(p=>p.num||0));
-    if(isOnline){
-      await dbClear();
-      for(const p of patients) await dbSet(p);
-    }
-  } else {
+    patients=data.patients;patN=data.patN||Math.max(0,...patients.map(p=>p.num||0));
+    if(isOnline){await dbClear();for(const p of patients)await dbSet(p);}
+  }else{
     for(const np of data.patients){
       const i=patients.findIndex(p=>p.id===np.id);
       if(i>=0)patients[i]=np;else{patN=Math.max(patN,np.num||0);patients.push(np);}
-      if(isOnline) await dbSet(np);
+      if(isOnline)await dbSet(np);
     }
   }
   toast(cnt+' Patient(en) importiert'+(isOnline?' — für alle sichtbar':''),'ok');
@@ -1034,11 +1009,10 @@ window.delPat=async id=>{
   toast('Gelöscht','ok');
 };
 async function confirmClearAll(){
-  if(isOnline){toast('Alle löschen im Online-Modus deaktiviert','err');return;}
+  if(isOnline){toast('Im Online-Modus deaktiviert','err');return;}
   if(!patients.length){toast('Keine Patienten','err');return;}
   if(!confirm('Alle '+patients.length+' Patienten löschen?\nNicht rückgängig!'))return;
-  patients=[];patN=0; await dbClear();
-  if(!isOnline)render();
+  patients=[];patN=0;render();
   toast('Alle gelöscht','ok');
 }
 
@@ -1055,7 +1029,7 @@ function toast(msg,type){
   clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',2800);
 }
 
-/* ── POSTMESSAGE (from index.html) ── */
+/* ── POSTMESSAGE ── */
 window.addEventListener('message',e=>{
   const d=e.data;if(!d||d.target!=='manv')return;
   if(d.fn==='openNewPatient')window.openNew();
@@ -1072,14 +1046,7 @@ window.confirmClearAll=confirmClearAll;
 /* ── INIT ── */
 resetMed();
 render();
-
-// Start in local mode, notify parent
 notifyParentMode(0);
-
-// Always start in local mode — user must manually switch to online
-// Pre-fill the URL field so they don't have to type it, but don't connect
-const DEFAULT_FB_URL = 'https://rettungsnetz-default-rtdb.europe-west1.firebasedatabase.app';
-document.getElementById('fb-url').value = lsGet(FB_KEY) || DEFAULT_FB_URL;
 </script>
 </body>
 </html>
