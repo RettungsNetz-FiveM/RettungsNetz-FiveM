@@ -575,8 +575,12 @@ function goOffline(silent=false){
   stopPolling();
   if(editId) releaseEditLock(editId);
   fbDel('/manv/presence/' + MY_ID, true).catch(()=>{});
+  // Patienten-Liste leeren — Online-Daten gehören nicht in den lokalen Modus
+  patients = [];
+  patN = 0;
   editingLocks = {};
   updateLockBadges();
+  render();
   if(!silent) toast('Lokaler Modus aktiv', 'info');
   notifyParent(0);
 }
@@ -864,16 +868,32 @@ window.savePatient = async () => {
     const i = patients.findIndex(p => p.id === editId);
     if(i >= 0){ patients[i] = {...patients[i], ...data, updatedAt:ts}; saved = patients[i]; }
     toast('Patient gespeichert', 'ok');
+    if(editId) await releaseEditLock(editId);
+    window.closeModal();
+    if(saved) await dbSave(saved);
+    if(!isOnline) render();
   } else {
-    patN++;
+    // Im Online-Modus: patN atomar aus DB holen um Kollisionen zu vermeiden
+    if(isOnline){
+      try{
+        const existing = await fbGet('/manv/patients');
+        const maxNum = existing
+          ? Math.max(0, ...Object.values(existing)
+              .filter(v => v && typeof v.num === 'number')
+              .map(v => v.num))
+          : 0;
+        patN = maxNum + 1;
+      }catch(e){ patN++; }
+    } else {
+      patN++;
+    }
     saved = {id:uid(), num:patN, createdAt:ts, updatedAt:ts, ...data};
     patients.push(saved);
     toast('Patient erfasst', 'ok');
+    window.closeModal();
+    await dbSave(saved);
+    if(!isOnline) render();
   }
-  if(editId) await releaseEditLock(editId);
-  window.closeModal();
-  if(saved) await dbSave(saved);   // schreibt komplettes Objekt → pollAll bekommt saubere Daten
-  if(!isOnline) render();
 };
 
 window.quickDone = async (id, e) => {
@@ -962,8 +982,10 @@ function buildCard(p){
     ? '<div class="done-stamp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="11" height="11"><polyline points="20 6 9 17 4 12"/></svg>Abtransportiert</div>'
     : '';
 
-  // ── FIX: btn-edit Klasse für Lock-Blocking ────────────
-  const editBtnDisabled = isLockedByOther(p.id) ? ' disabled style="opacity:.35;cursor:not-allowed"' : '';
+  // ── Buttons deaktivieren wenn Karte gesperrt ─────────
+  const locked = isLockedByOther(p.id);
+  const lockAttr = locked ? ' disabled style="opacity:.35;cursor:not-allowed;pointer-events:none"' : '';
+  const editBtnDisabled = locked ? ' disabled style="opacity:.35;cursor:not-allowed"' : '';
 
   el.innerHTML = doneBar +
     '<div class="pat-head" onclick="openEdit(\''+p.id+'\')">'+
@@ -995,10 +1017,10 @@ function buildCard(p){
       '<div class="pat-tags">'+tags+((p.massnahmen||[]).length>3?'<span class="ptag" style="background:var(--sf3);color:var(--dim)">+'+(p.massnahmen.length-3)+'</span>':'')+'</div>'+
       '<div class="pat-actions">'+
         (p.done
-          ? '<button class="cbtn ab" onclick="quickDone(\''+p.id+'\',event)">↺ Aktiv</button>'
-          : '<button class="cbtn gb" onclick="quickDone(\''+p.id+'\',event)">✓ Abtr.</button>')+
+          ? '<button class="cbtn ab"'+lockAttr+' onclick="quickDone(\''+p.id+'\',event)">↺ Aktiv</button>'
+          : '<button class="cbtn gb"'+lockAttr+' onclick="quickDone(\''+p.id+'\',event)">✓ Abtr.</button>')+
         '<button class="cbtn" onclick="event.stopPropagation();expById(\''+p.id+'\')">↓</button>'+
-        '<button class="cbtn" onclick="event.stopPropagation();delPat(\''+p.id+'\')" style="color:var(--red)">✕</button>'+
+        '<button class="cbtn"'+lockAttr+' onclick="event.stopPropagation();delPat(\''+p.id+'\')" style="color:var(--red)">✕</button>'+
         '<button class="cbtn btn-edit" onclick="openEdit(\''+p.id+'\')"'+editBtnDisabled+'>Bearbeiten</button>'+
       '</div>'+
     '</div>';
