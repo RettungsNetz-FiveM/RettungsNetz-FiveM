@@ -687,11 +687,11 @@ async function pollAll(){
    ═══════════════════════════════════════════════════════════ */
 async function acquireEditLock(pid){
   if(!isOnline || !pid) return;
-  // Sofort lokal setzen → render() zeigt Lock augenblicklich
+  // Lokal sofort setzen + Badges aktualisieren (für diesen User instant)
   editingLocks[pid] = MY_ID;
-  // Wir wollen NICHT unsere eigene Karte sperren — isLockedByOther prüft !== MY_ID
-  // also bleibt die Karte für uns selbst bedienbar, für andere gesperrt
-  try { await fbPut('/manv/editing/' + pid, MY_ID); } catch(e){}
+  updateLockBadges();
+  // FB-Write feuern ohne zu warten — andere User sehen es beim nächsten Poll (~800ms)
+  fbPut('/manv/editing/' + pid, MY_ID).catch(()=>{});
 }
 
 async function releaseEditLock(pid){
