@@ -176,9 +176,9 @@ header {
 .content-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
 .view      { position: absolute; inset: 0; display: none; flex-direction: column; overflow: hidden; }
 .view.active { display: flex; }
-.tool-view { position: absolute; inset: 0; display: none; flex-direction: column; overflow: hidden; }
+.tool-view { position: absolute; inset: 0; display: none; flex-direction: column; overflow: auto; }
 .tool-view.active { display: flex; }
-.tool-frame { flex: 1; border: none; display: block; width: 100%; height: 100%; }
+.tool-frame { flex: 1; border: none; display: block; width: 100%; height: 100%; min-height: 0; }
 
 /* ════════════════════════════════
    DASHBOARD
