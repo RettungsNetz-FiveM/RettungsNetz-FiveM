@@ -251,7 +251,7 @@ header {
     <div class="h-sigil">RN</div>
     <div class="h-name">
       <span class="h-name-main">Rettungs<em>Netz</em></span>
-      <span class="h-name-sub">Digitale Einsatzplattform · v1.0</span>
+      <span class="h-name-sub">Fiktives Einsatzmanagement · v1.0</span>
     </div>
   </div>
 
@@ -480,9 +480,9 @@ header {
     <!-- ── DASHBOARD ── -->
     <div class="view active" id="view-dashboard">
       <div class="dashboard-hero">
-        <div class="hero-eyebrow">Digitale Einsatzdokumentation</div>
+        <div class="hero-eyebrow">RettungsNetz · Start</div>
         <div class="hero-title">Rettungs<em>Netz</em></div>
-        <div class="hero-sub">Zentrales Portal für mobile Einsatzdokumentation, MANV-Triage und Fahrzeugplanung im Roleplay Bereich.</div>
+        <div class="hero-sub">Zentrales Portal für fiktives Einsatzmanagement im Roleplay-Bereich mit Funktionen zur MANV-Triage, Einsatzdokumentation, Atemschutzüberwachung, medizinischen Schemata sowie zur Fahrzeug- und Einsatzplanung.</div>
       </div>
       <div class="modules-section">
         <div class="section-head">
@@ -565,7 +565,7 @@ header {
       <div class="sysinfo-grid">
         <div class="sysinfo-cell"><span class="sysinfo-label">Verfügbare Module</span><span class="sysinfo-val">5</span><span class="sysinfo-note">Schnell · Einfach · Kompakt</span></div>
         <div class="sysinfo-cell"><span class="sysinfo-label">Plattform</span><span class="sysinfo-val">Web</span><span class="sysinfo-note">Browser-basiert · Offline-fähig</span></div>
-        <div class="sysinfo-cell"><span class="sysinfo-label">Version</span><span class="sysinfo-val">1.0</span><span class="sysinfo-note">Build 2025.03</span></div>
+        <div class="sysinfo-cell"><span class="sysinfo-label">Version</span><span class="sysinfo-val">1.0</span><span class="sysinfo-note">Build 2026.03</span></div>
       </div>
     </div>
 
@@ -596,23 +596,139 @@ header {
 
     <!-- ── INFO ── -->
     <div class="view" id="view-info" style="overflow-y:auto;padding:40px;background:var(--bg);">
-      <div style="max-width:800px;">
-        <div style="font-family:var(--mono);font-size:8px;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-bottom:14px;">System · Info</div>
-        <div style="font-family:var(--cond);font-size:36px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--white);margin-bottom:20px;line-height:1;">Rettungs<em style="color:var(--red);font-style:normal;">Netz</em></div>
-        <div style="border:1px solid var(--bd);background:var(--sf);padding:20px 22px;">
-          <div style="font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:8px;">Hinweis &amp; Copyright</div>
-          <div style="font-size:15px;color:var(--txt2);line-height:1.6;font-weight:300;">
-            Alle Daten werden lokal im Browser verarbeitet. Es werden keine Patientendaten übertragen oder gespeichert.
+      <div style="max-width:860px;">
+
+        <!-- Header -->
+        <div class="hero-eyebrow">System · Info</div>
+        <div class="hero-title">Rettungs<em>Netz</em></div>
+        <div class="hero-sub" style="margin-bottom:32px;">Fiktives Einsatzmanagement · v1.0 · Build 2026.03</div>
+        <!-- Grid of info boxes -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+          <!-- Box 1: Systembeschreibung -->
+          <div style="border:1px solid var(--bd);border-top:3px solid var(--blu);background:var(--sf);padding:22px 24px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <span style="font-size:20px;">🖥️</span>
+              <div>
+                <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--blu);text-transform:uppercase;margin-bottom:3px;">01 · System</div>
+                <div style="font-family:var(--cond);font-size:20px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--white);">Systembeschreibung</div>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--bd);margin-bottom:14px;"></div>
+            <div style="font-size:15px;color:var(--txt);line-height:1.7;font-weight:300;">
+              RettungsNetz ist eine <b style="color:var(--white);font-weight:500;">webbasierte Einsatzplattform</b> mit mehreren digitalen Modulen für simulierte Rettungsdienstszenarien.
+            </div>
+            <ul style="margin-top:12px;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px;">
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
+                <span style="color:var(--blu);font-size:16px;line-height:1.3;">▸</span>
+                <span>Webbasierte Einsatzmodule — läuft direkt im Browser, keine Installation nötig</span>
+              </li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
+                <span style="color:var(--blu);font-size:16px;line-height:1.3;">▸</span>
+                <span>Für Roleplay-Spiele wie <b style="color:var(--txt);">FiveM</b>, <b style="color:var(--txt);">Roblox</b> und ähnliche Plattformen entwickelt</span>
+              </li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
+                <span style="color:var(--blu);font-size:16px;line-height:1.3;">▸</span>
+                <span>5 Module: Protokoll, MANV-Triage, Atemschutz, Fahrzeugplaner, Nachschlagewerk</span>
+              </li>
+            </ul>
           </div>
-          <div style="margin-top:10px;padding:10px 12px;border:1px solid rgba(230,57,70,.3);background:rgba(230,57,70,.06);border-radius:2px;">
-            <div style="font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:6px;">⚠ Nur für fiktive Spiele &amp; Roleplay</div>
-            <div style="font-size:14.5px;color:var(--txt2);line-height:1.65;font-weight:300;">
-              Dieses System ist <b style="color:var(--white);font-weight:500;">ausschließlich für fiktive Rollenspiele und simulierte Szenarien</b> konzipiert. Es ist <b style="color:var(--red);font-weight:500;">nicht</b> für den Einsatz in echten Rettungsdiensten, Organisationen oder medizinischen Einrichtungen geeignet und sollte dort <b style="color:var(--red);font-weight:500;">niemals</b> verwendet werden.
+
+          <!-- Box 2: Datenspeicherung -->
+          <div style="border:1px solid var(--bd);border-top:3px solid var(--grn);background:var(--sf);padding:22px 24px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <span style="font-size:20px;">💾</span>
+              <div>
+                <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--grn);text-transform:uppercase;margin-bottom:3px;">02 · Daten</div>
+                <div style="font-family:var(--cond);font-size:20px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--white);">Datenspeicherung</div>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--bd);margin-bottom:14px;"></div>
+            <div style="font-size:15px;color:var(--txt);line-height:1.7;font-weight:300;">
+              Alle Daten werden <b style="color:var(--white);font-weight:500;">lokal im Browser</b> verarbeitet und gespeichert. Es werden keine Daten an externe Server übertragen.
+            </div>
+            <ul style="margin-top:12px;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px;">
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
+                <span style="color:var(--grn);font-size:16px;line-height:1.3;">▸</span>
+                <span>Daten werden nur <b style="color:var(--txt);">lokal im Browser</b> gespeichert</span>
+              </li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
+                <span style="color:var(--grn);font-size:16px;line-height:1.3;">▸</span>
+                <span>Keine Cloud, keine externen Server</span>
+              </li>
+            </ul>
+            <div style="margin-top:14px;padding:10px 13px;border:1px solid rgba(82,183,136,.25);background:rgba(82,183,136,.05);border-radius:2px;">
+              <div style="font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--grn);text-transform:uppercase;margin-bottom:5px;">ℹ Ausnahme · MANV Online-Modus</div>
+              <div style="font-size:13px;color:var(--txt2);line-height:1.6;font-weight:300;">Im Online-Modus der MANV-Triage werden Daten über <b style="color:var(--txt);">Firebase</b> synchronisiert, um Echtzeit-Zusammenarbeit zu ermöglichen.</div>
             </div>
           </div>
-          <div style="margin-top:10px;font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:1px;">
-            © <b style="color:var(--txt2);">Type1Diabetes</b> · Alle Rechte vorbehalten · Entwicklung &amp; Design
+
+          <!-- Box 3: Rechtlicher Hinweis -->
+          <div style="border:1px solid var(--bd);border-top:3px solid var(--red);background:var(--sf);padding:22px 24px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <span style="font-size:20px;">⚖️</span>
+              <div>
+                <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:3px;">03 · Recht</div>
+                <div style="font-family:var(--cond);font-size:20px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--white);">Rechtlicher Hinweis</div>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--bd);margin-bottom:14px;"></div>
+            <div style="padding:12px 14px;border:1px solid rgba(230,57,70,.35);background:rgba(230,57,70,.07);border-radius:2px;margin-bottom:14px;">
+              <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--red);text-transform:uppercase;margin-bottom:6px;">⚠ Ausschließlich für Roleplay</div>
+              <div style="font-size:14px;color:var(--txt2);line-height:1.65;font-weight:300;">
+                Dieses System ist <b style="color:var(--white);font-weight:500;">ausschließlich für fiktive Rollenspiele und simulierte Szenarien</b> konzipiert.
+              </div>
+            </div>
+            <ul style="padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px;">
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
+                <span style="color:var(--red);font-size:16px;line-height:1.3;">▸</span>
+                <span><b style="color:var(--red);">Nicht</b> für den Einsatz in echten Rettungsdiensten oder medizinischen Einrichtungen geeignet</span>
+              </li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
+                <span style="color:var(--red);font-size:16px;line-height:1.3;">▸</span>
+                <span>Inhalte können fiktiv, vereinfacht oder unvollständig sein — <b style="color:var(--txt);">keine Garantie auf Richtigkeit</b></span>
+              </li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
+                <span style="color:var(--red);font-size:16px;line-height:1.3;">▸</span>
+                <span>Verwendung im realen Notfallbetrieb ist <b style="color:var(--red);">ausdrücklich untersagt</b></span>
+              </li>
+            </ul>
           </div>
+
+          <!-- Box 4: Entwickler / Copyright -->
+          <div style="border:1px solid var(--bd);border-top:3px solid var(--pur);background:var(--sf);padding:22px 24px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <span style="font-size:20px;">👨‍💻</span>
+              <div>
+                <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--pur);text-transform:uppercase;margin-bottom:3px;">04 · Credits</div>
+                <div style="font-family:var(--cond);font-size:20px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--white);">Entwickler &amp; Copyright</div>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--bd);margin-bottom:14px;"></div>
+            <div style="display:flex;align-items:center;gap:16px;padding:14px 16px;border:1px solid rgba(139,92,246,.25);background:rgba(139,92,246,.06);border-radius:2px;margin-bottom:14px;">
+              <div style="width:46px;height:46px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🧑‍⚕️</div>
+              <div>
+                <div style="font-family:var(--cond);font-size:22px;font-weight:700;letter-spacing:1px;color:var(--white);">Type1Diabetes</div>
+                <div style="font-family:var(--mono);font-size:10px;color:var(--txt2);letter-spacing:1px;margin-top:2px;">Daniel · Entwickler &amp; Designer</div>
+              </div>
+            </div>
+            <ul style="padding-left:0;list-style:none;display:flex;flex-direction:column;gap:8px;">
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
+                <span style="color:var(--pur);font-size:16px;line-height:1.3;">▸</span>
+                <span>Konzept, Design und Entwicklung: <b style="color:var(--txt);">Type1Diabetes (Daniel)</b></span>
+              </li>
+              <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
+                <span style="color:var(--pur);font-size:16px;line-height:1.3;">▸</span>
+                <span>Alle Rechte vorbehalten · Unbefugte Weitergabe oder Veränderung untersagt</span>
+              </li>
+            </ul>
+            <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bd);">
+              <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:1px;">
+                © 2026 <b style="color:var(--txt2);">Type1Diabetes</b> · Alle Rechte vorbehalten
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
