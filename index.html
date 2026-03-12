@@ -234,10 +234,60 @@ header {
 .corner-deco { position: fixed; width: 40px; height: 40px; pointer-events: none; z-index: 100; opacity: .12; }
 .corner-deco.tl { top: 62px; left: 80px; border-top: 2px solid var(--red); border-left: 2px solid var(--red); }
 .corner-deco.br { bottom: 8px; right: 8px; border-bottom: 2px solid var(--red); border-right: 2px solid var(--red); }
+
+/* ════════════════════════════════
+   BLAULICHT
+════════════════════════════════ */
+#blaulicht {
+  position: fixed;
+  top: 54px;
+  left: 72px;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 10;
+  filter: blur(80px);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#blaulicht.active { opacity: 1; }
+
+.bl-dot {
+  position: absolute;
+  width: 350px; height: 350px;
+  top: 0; left: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(30,100,255,0.5) 0%, transparent 70%);
+  will-change: transform, opacity;
+  opacity: 0;
+}
+
+#view-dashboard .module-card,
+#view-dashboard .sysinfo-cell {
+  position: relative;
+  z-index: 20;
+  background: rgba(13, 17, 23, 0.95) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+#view-dashboard .modules-section,
+#view-dashboard .dashboard-hero,
+#view-dashboard .sysinfo-grid {
+  position: relative;
+  z-index: 20;
+}
+
 </style>
 </head>
 <body>
 
+<div id="blaulicht" class="active">
+  <div class="bl-dot"></div>
+  <div class="bl-dot"></div>
+  <div class="bl-dot"></div>
+  <div class="bl-dot"></div>
+  <div class="bl-dot"></div>
+</div>
 <div class="corner-deco tl"></div>
 <div class="corner-deco br"></div>
 
@@ -494,7 +544,7 @@ header {
             <div class="mc-header">
               <div class="mc-icon-wrap">📋</div>
               <div class="mc-meta">
-                <div class="mc-tag">Modul 01 · Dokumentation</div>
+                <div class="mc-tag">Modul 01 · Rettungsdienst</div>
                 <div class="mc-title">Einsatz-Protokoll</div>
               </div>
             </div>
@@ -508,7 +558,7 @@ header {
             <div class="mc-header">
               <div class="mc-icon-wrap" style="font-size:22px">🚨</div>
               <div class="mc-meta">
-                <div class="mc-tag">Modul 02 · MANV · Triage</div>
+                <div class="mc-tag">Modul 02 · Rettungsdienst</div>
                 <div class="mc-title">MANV Triage</div>
               </div>
             </div>
@@ -522,7 +572,7 @@ header {
             <div class="mc-header">
               <div class="mc-icon-wrap">🫁</div>
               <div class="mc-meta">
-                <div class="mc-tag">Modul 03 · Atemschutz</div>
+                <div class="mc-tag">Modul 03 · Feuerwehr</div>
                 <div class="mc-title">Atemschutzüberwachung</div>
               </div>
             </div>
@@ -536,7 +586,7 @@ header {
             <div class="mc-header">
               <div class="mc-icon-wrap">🚑</div>
               <div class="mc-meta">
-                <div class="mc-tag">Modul 04 · Planung</div>
+                <div class="mc-tag">Modul 04 · Sonstige</div>
                 <div class="mc-title">Fahrzeug-Planer</div>
               </div>
             </div>
@@ -550,7 +600,7 @@ header {
             <div class="mc-header">
               <div class="mc-icon-wrap">📖</div>
               <div class="mc-meta">
-                <div class="mc-tag">Modul 05 · Nachschlagewerk</div>
+                <div class="mc-tag">Modul 05 · Sonstige</div>
                 <div class="mc-title">Schema-Nachschlagewerk</div>
               </div>
             </div>
@@ -959,6 +1009,77 @@ function manvUpdateModeUI(online, users) {
     if (clr) { clr.disabled = false; clr.style.opacity = '1'; clr.title = ''; }
   }
 }
+
+// ── Blaulicht: flash once then move ──
+(function() {
+  const bl = document.getElementById('blaulicht');
+  const dots = Array.from(document.querySelectorAll('.bl-dot'));
+  const S = 350;
+
+  function W() { return Math.max(100, window.innerWidth  - 72 - S); }
+  function H() { return Math.max(100, window.innerHeight - 54 - S); }
+
+  const pos = dots.map(() => ({ x: 0, y: 0 }));
+
+  function pickPos(i) {
+    let best = { x: Math.random() * W(), y: Math.random() * H() };
+    let bestDist = 0;
+    for (let t = 0; t < 60; t++) {
+      const nx = Math.random() * W();
+      const ny = Math.random() * H();
+      let minD = Infinity;
+      dots.forEach((_, j) => {
+        if (j === i) return;
+        const d = Math.hypot(nx - pos[j].x, ny - pos[j].y);
+        if (d < minD) minD = d;
+      });
+      if (minD > bestDist) { bestDist = minD; best = { x: nx, y: ny }; }
+    }
+    return best;
+  }
+
+  function runDot(dot, i) {
+    const p = pickPos(i);
+    pos[i].x = p.x;
+    pos[i].y = p.y;
+    dot.style.transition = 'none';
+    dot.style.opacity = '0';
+    dot.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)';
+
+    setTimeout(() => {
+      dot.style.transition = 'opacity 0.4s ease-in-out';
+      dot.style.opacity = (0.5 + Math.random() * 0.35).toFixed(2);
+      setTimeout(() => {
+        dot.style.transition = 'opacity 0.4s ease-in-out';
+        dot.style.opacity = '0';
+        setTimeout(() => runDot(dot, i), 420);
+      }, 500);
+    }, 30);
+  }
+
+  const startPos = [
+    { x: 0.05, y: 0.05 }, { x: 0.60, y: 0.08 }, { x: 0.82, y: 0.50 },
+    { x: 0.08, y: 0.65 }, { x: 0.48, y: 0.75 }
+  ];
+  dots.forEach((dot, i) => {
+    pos[i].x = startPos[i].x * W();
+    pos[i].y = startPos[i].y * H();
+    dot.style.transform = 'translate(' + pos[i].x + 'px,' + pos[i].y + 'px)';
+    setTimeout(() => runDot(dot, i), i * 220);
+  });
+
+  const origShow = window.showView;
+  window.showView = function(name) {
+    origShow(name);
+    bl.classList.toggle('active', name === 'dashboard');
+  };
+  const origOpen = window.openTool;
+  window.openTool = function(tool) {
+    origOpen(tool);
+    bl.classList.remove('active');
+  };
+})();
+
 </script>
 </body>
 </html>
