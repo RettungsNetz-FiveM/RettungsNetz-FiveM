@@ -189,9 +189,9 @@ header {
 }
 .dashboard-hero { padding: 36px 40px 28px; border-bottom: 1px solid var(--bd); position: relative; overflow: hidden; }
 .dashboard-hero::after {
-  content: 'SYSTEM ONLINE'; position: absolute; right: 40px; bottom: 16px;
-  font-family: var(--mono); font-size: 9px; letter-spacing: 3px;
-  color: rgba(82,183,136,.18); text-transform: uppercase;
+  content: 'SYSTEME ONLINE'; position: absolute; right: 40px; bottom: 16px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 3px;
+  color: rgba(82, 183, 136, 0.507); text-transform: uppercase;
 }
 .hero-eyebrow { font-family: var(--mono); font-size: 9px; letter-spacing: 3px; color: var(--red); text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
 .hero-eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--red); display: inline-block; }
@@ -203,7 +203,7 @@ header {
 .section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
 .section-tag { font-family: var(--mono); font-size: 9px; letter-spacing: 3px; color: var(--dim); text-transform: uppercase; padding: 3px 8px; border: 1px solid var(--bd); background: var(--sf); }
 .section-line { flex: 1; height: 1px; background: var(--bd); }
-.modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 12px; align-items: stretch; }
+.modules-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch; padding-right: 390px}
 
 .module-card { background: var(--sf); border: 1px solid var(--bd); border-top: 3px solid var(--bd2); padding: 20px 22px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 0; }
 .module-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--card-accent, var(--red)); transform: scaleX(0); transform-origin: left; transition: transform .25s; }
