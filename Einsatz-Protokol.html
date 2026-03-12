@@ -303,6 +303,33 @@ body {
 }
 .btn-now:hover { background: var(--rot-d); }
 
+/* ══ VITAL GLOW ══ */
+.vt td input.vt-ok {
+  color: #2ecc71 !important;
+  text-shadow: 0 0 6px rgba(46,204,113,.7), 0 0 12px rgba(46,204,113,.35);
+  font-weight: 700;
+}
+.vt td input.vt-warn {
+  color: #e67e22 !important;
+  text-shadow: 0 0 6px rgba(230,126,34,.7), 0 0 12px rgba(230,126,34,.35);
+  font-weight: 700;
+}
+.vt td input.vt-crit {
+  color: #e74c3c !important;
+  text-shadow: 0 0 8px rgba(231,76,60,.9), 0 0 16px rgba(231,76,60,.5);
+  font-weight: 700;
+  animation: vtCritPulse 1.4s ease-in-out infinite;
+}
+@keyframes vtCritPulse {
+  0%,100% { text-shadow: 0 0 8px rgba(231,76,60,.9), 0 0 16px rgba(231,76,60,.5); }
+  50%      { text-shadow: 0 0 14px rgba(231,76,60,1), 0 0 26px rgba(231,76,60,.8); }
+}
+@media print {
+  .vt td input.vt-ok   { color: #1a8a3a !important; text-shadow: none !important; }
+  .vt td input.vt-warn { color: #a05010 !important; text-shadow: none !important; }
+  .vt td input.vt-crit { color: #c0392b !important; text-shadow: none !important; animation: none !important; }
+}
+
 .divider { height: 1px; background: var(--g6); flex-shrink: 0; }
 
 /* SIGNATURES */
@@ -321,6 +348,88 @@ body {
 .sig-author-input::placeholder { color: var(--g5); font-size: 20px; }
 .sig-lbl  { font-size: 8px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--g4); }
 .sig-hint { font-size: 8px; color: var(--g5); font-style: italic; }
+
+/* ══ NAME-WARNING POPUP ══ */
+.warn-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.65);
+  display: flex; align-items: center; justify-content: center;
+  animation: warnFadeIn .18s ease;
+}
+@keyframes warnFadeIn {
+  from { opacity:0; } to { opacity:1; }
+}
+.warn-box {
+  background: #1a1a1a;
+  border: 2px solid #C0392B;
+  border-radius: 4px;
+  padding: 28px 32px 22px;
+  max-width: 420px; width: 90%;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  box-shadow: 0 0 40px rgba(192,57,43,.45), 0 8px 32px rgba(0,0,0,.6);
+  animation: warnPop .22s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes warnPop {
+  from { transform: scale(.88); opacity:0; }
+  to   { transform: scale(1);   opacity:1; }
+}
+[data-theme="light"] .warn-box { background: #fff; }
+.warn-icon {
+  width: 48px; height: 48px;
+  background: rgba(192,57,43,.12);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  animation: warnIconPulse 1.6s ease-in-out infinite;
+}
+@keyframes warnIconPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(192,57,43,.4); }
+  50%      { box-shadow: 0 0 0 10px rgba(192,57,43,0); }
+}
+.warn-icon svg { width: 26px; height: 26px; }
+.warn-title {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 15px; font-weight: 800; letter-spacing: .04em;
+  color: #C0392B; text-transform: uppercase; text-align: center;
+}
+.warn-msg {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px; color: var(--g2); text-align: center; line-height: 1.55;
+}
+[data-theme="dark"] .warn-msg { color: #ccc; }
+.warn-missing {
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+}
+.warn-badge {
+  background: rgba(192,57,43,.15); border: 1px solid rgba(192,57,43,.4);
+  color: #C0392B; font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  padding: 3px 10px; border-radius: 2px; text-transform: uppercase;
+}
+.warn-btn {
+  background: #C0392B; color: #fff; border: none; cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  padding: 9px 28px; border-radius: 2px; margin-top: 4px;
+  transition: background .15s;
+}
+.warn-btn:hover { background: #922B21; }
+.warn-btn-skip {
+  background: transparent; color: #666; border: 1px solid #444;
+  cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  padding: 6px 18px; border-radius: 2px;
+  transition: border-color .15s, color .15s;
+}
+.warn-btn-skip:hover { border-color: #888; color: #aaa; }
+.warn-btn-recheck {
+  background: transparent; color: #9A6B1A; border: 1px solid #9A6B1A;
+  cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 6px 16px; border-radius: 2px;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.warn-btn-recheck:hover { background: rgba(154,107,26,.12); }
+.warn-buttons { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
 
 /* PRINT */
 @media print {
@@ -368,8 +477,8 @@ body.printing textarea::placeholder { color: transparent !important; }
       </div>
       <div class="s-body" style="flex:1; display:flex; flex-direction:column;">
         <div class="g4">
-          <div class="f c2"><label>Nachname</label><input type="text" placeholder="Mustermann"></div>
-          <div class="f c2"><label>Vorname</label><input type="text" placeholder="Max"></div>
+          <div class="f c2"><label>Nachname</label><input type="text" id="pat_nachname" placeholder="Mustermann" autocomplete="off"></div>
+          <div class="f c2"><label>Vorname</label><input type="text" id="pat_vorname" placeholder="Max" autocomplete="off"></div>
           <div class="f c2"><label>Geburtsdatum</label><input type="date"></div>
           <div class="f"><label>Geschlecht</label>
             <select><option value="">—</option><option>Männlich</option><option>Weiblich</option><option>Divers</option></select>
@@ -394,7 +503,7 @@ body.printing textarea::placeholder { color: transparent !important; }
           <div class="f"><label>Fahrzeugtyp</label>
             <select><option value="">—</option><option>First Responder</option><option>KTW</option><option>RTW</option><option>NEF</option><option>RTH</option><option>Sonstiges</option></select>
           </div>
-          <div class="f"><label>Kennung</label><input type="text" placeholder="Florian 1-83-1"></div>
+          <div class="f"><label>Kennung</label><input type="text" id="fz_kennung" placeholder="Florian 1-83-1" autocomplete="off"></div>
           <div class="f"><label>Wache / Org.</label><input type="text" placeholder="RW Mitte"></div>
           <div class="f"><label>Ausrückezeit</label><div class="vt-time-cell"><input type="text" id="ausrueck_time" placeholder="HH:MM"><button class="btn-now" onclick="setNow('ausrueck_time')">⏱ Zeit</button></div></div>
           <div class="f"><label>Ankunftszeit</label><div class="vt-time-cell"><input type="text" id="ankunft_time" placeholder="HH:MM"><button class="btn-now" onclick="setNow('ankunft_time')">⏱ Zeit</button></div></div>
@@ -414,7 +523,7 @@ body.printing textarea::placeholder { color: transparent !important; }
       <div class="s-body">
         <div class="g3">
           <div class="f"><label>Einsatzart</label>
-            <select><option value="">—</option><option>First Responder</option><option>Krankentransport</option><option>Notfalleinsatz (RTW)</option><option>Notarzteinsatz (NEF/RTH)</option><option>Grossschadensereignis</option><option>Sanitätsdienst</option><option>Fehleinsatz</option></select>
+            <select id="einsatzart"><option value="">—</option><option>First Responder</option><option>Krankentransport</option><option>Notfalleinsatz (RTW)</option><option>Notarzteinsatz (NEF/RTH)</option><option>Grossschadensereignis</option><option>Sanitätsdienst</option><option>Fehleinsatz</option></select>
           </div>
           <div class="f"><label>Patientenlage bei Ankunft</label>
             <select><option value="">—</option><option>Bewusst, ansprechbar</option><option>Bewusstsein eingeschränkt</option><option>Bewusstlos, atmend</option><option>Bewusstlos – Reanimation</option><option>Stehend / Gehend</option><option>Sitzend</option><option>Liegend</option><option>Eingeklemmt</option></select>
@@ -468,11 +577,17 @@ body.printing textarea::placeholder { color: transparent !important; }
           <tbody>
             <tr>
               <td><div class="vt-time-cell"><input type="text" id="vt1_time"><button class="btn-now" onclick="setNow('vt1_time')">⏱Zeit</button></div></td>
-              <td><input type="text" placeholder="120"></td><td><input type="text" placeholder="80"></td><td><input type="text" placeholder="80"></td><td><input type="text" placeholder="99"></td>
+              <td><input type="text" id="vt1_rr_syst"  placeholder="120" data-vt="rr-syst"  oninput="checkVital(this)"></td>
+              <td><input type="text" id="vt1_rr_diast" placeholder="80"  data-vt="rr-diast" oninput="checkVital(this)"></td>
+              <td><input type="text" id="vt1_puls"     placeholder="80"  data-vt="puls"     oninput="checkVital(this)"></td>
+              <td><input type="text" id="vt1_spo2"     placeholder="99"  data-vt="spo2"     oninput="checkVital(this)"></td>
             </tr>
             <tr>
               <td><div class="vt-time-cell"><input type="text" id="vt2_time"><button class="btn-now" onclick="setNow('vt2_time')">⏱Zeit</button></div></td>
-              <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+              <td><input type="text" id="vt2_rr_syst"  data-vt="rr-syst"  oninput="checkVital(this)"></td>
+              <td><input type="text" id="vt2_rr_diast" data-vt="rr-diast" oninput="checkVital(this)"></td>
+              <td><input type="text" id="vt2_puls"     data-vt="puls"     oninput="checkVital(this)"></td>
+              <td><input type="text" id="vt2_spo2"     data-vt="spo2"     oninput="checkVital(this)"></td>
             </tr>
           </tbody>
         </table>
@@ -742,11 +857,11 @@ body.printing textarea::placeholder { color: transparent !important; }
           <div class="sig-box">
             <div class="f" style="margin-bottom:4px;">
               <label>Protokollführer — Name &amp; Qualifikation</label>
-              <input type="text" placeholder="Vor- und Nachname, RA / NFS / NotSan …">
+              <input type="text" id="sig_protkf_name" placeholder="Vor- und Nachname, RA / NFS / NotSan …" autocomplete="off">
             </div>
             <div class="sig-lbl" style="margin-bottom:3px;">Unterschrift Protokollführer</div>
             <div class="sig-author-wrap">
-              <textarea class="sig-author-input" rows="2" placeholder="Hier unterschreiben …" spellcheck="false"></textarea>
+              <textarea id="sig_protkf_sig" class="sig-author-input" rows="2" placeholder="Hier unterschreiben …" spellcheck="false"></textarea>
             </div>
           </div>
 
@@ -821,8 +936,192 @@ function addMedRow() {
   tbody.appendChild(tr);
 }
 
+// ── Pflichtfelder-Warnung ──
+// Jeder Eintrag: { id, label, type: 'input'|'select'|'textarea', highlightId }
+var PFLICHT = [
+  { id: 'pat_nachname',    label: 'Patient · Nachname',                  type: 'input' },
+  { id: 'pat_vorname',     label: 'Patient · Vorname',                   type: 'input' },
+  { id: 'fz_kennung',      label: 'Fahrzeug · Kennung',                  type: 'input' },
+  { id: 'einsatzart',      label: 'Notfallsituation · Einsatzart',       type: 'select' },
+  { id: 'sig_protkf_name', label: 'Protokollführer · Name & Qual.',      type: 'input' },
+  { id: 'sig_protkf_sig',  label: 'Protokollführer · Unterschrift',      type: 'textarea' },
+  { id: '_vitals',         label: 'Vitalzeichen · mind. 1 Zeile (RR syst. + RR diast. + Puls)', type: 'vitals' }
+];
+
+function checkPflicht() {
+  var missing = [];
+  PFLICHT.forEach(function(f) {
+    if (f.type === 'vitals') {
+      // Mind. eine vollständige Zeile: RR syst + RR diast + Puls in Zeile 1 oder Zeile 2
+      var rows = [
+        { s: 'vt1_rr_syst', d: 'vt1_rr_diast', p: 'vt1_puls' },
+        { s: 'vt2_rr_syst', d: 'vt2_rr_diast', p: 'vt2_puls' }
+      ];
+      var ok = rows.some(function(r) {
+        var s = (document.getElementById(r.s) || {}).value || '';
+        var d = (document.getElementById(r.d) || {}).value || '';
+        var p = (document.getElementById(r.p) || {}).value || '';
+        return s.trim() && d.trim() && p.trim();
+      });
+      if (!ok) missing.push(f);
+    } else {
+      var el = document.getElementById(f.id);
+      var val = el ? el.value.trim() : '';
+      if (!val) missing.push(f);
+    }
+  });
+  return missing;
+}
+
+function highlightMissing(missingList, on) {
+  // Reset all first
+  PFLICHT.forEach(function(f) {
+    if (f.type === 'vitals') {
+      ['vt1_rr_syst','vt1_rr_diast','vt1_puls','vt2_rr_syst','vt2_rr_diast','vt2_puls'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) { el.style.borderColor = ''; el.style.boxShadow = ''; }
+      });
+    } else {
+      var el = document.getElementById(f.id);
+      if (el) { el.style.borderColor = ''; el.style.boxShadow = ''; el.style.outline = ''; }
+    }
+  });
+  if (!on) return;
+  missingList.forEach(function(f) {
+    if (f.type === 'vitals') {
+      // Highlight alle 3 Vitalspalten in beiden Zeilen die noch leer sind
+      [
+        { s: 'vt1_rr_syst', d: 'vt1_rr_diast', p: 'vt1_puls' },
+        { s: 'vt2_rr_syst', d: 'vt2_rr_diast', p: 'vt2_puls' }
+      ].forEach(function(r) {
+        var s = (document.getElementById(r.s)||{}).value||'';
+        var d = (document.getElementById(r.d)||{}).value||'';
+        var p = (document.getElementById(r.p)||{}).value||'';
+        if (!s.trim() || !d.trim() || !p.trim()) {
+          [r.s, r.d, r.p].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el && !el.value.trim()) {
+              el.style.borderColor = '#C0392B';
+              el.style.boxShadow   = '0 0 0 2px rgba(192,57,43,.3)';
+            }
+          });
+        }
+      });
+    } else {
+      var el = document.getElementById(f.id);
+      if (el) {
+        el.style.borderColor = '#C0392B';
+        el.style.boxShadow   = '0 0 0 2px rgba(192,57,43,.3)';
+      }
+    }
+  });
+  // Scroll zum ersten fehlenden Element
+  var firstId = missingList[0].type === 'vitals' ? 'vt1_rr_syst' : missingList[0].id;
+  var firstEl = document.getElementById(firstId);
+  if (firstEl) firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function playWarnSound() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    function beep(freq, start, dur, vol) {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + start);
+      gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur + 0.05);
+    }
+    beep(520, 0,    0.16, 0.4);
+    beep(360, 0.20, 0.16, 0.4);
+    beep(520, 0.40, 0.20, 0.5);
+  } catch(e) {}
+}
+
+function showWarnPopup(missingList, onConfirm) {
+  playWarnSound();
+  highlightMissing(missingList, true);
+
+  var overlay = document.createElement('div');
+  overlay.className = 'warn-overlay';
+  overlay.id = 'warnOverlay';
+
+  function buildBadges(list) {
+    return list.map(function(f) {
+      return '<span class="warn-badge">' + f.label + '</span>';
+    }).join('');
+  }
+
+  overlay.innerHTML =
+    '<div class="warn-box">' +
+      '<div class="warn-icon">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>' +
+          '<line x1="12" y1="9" x2="12" y2="13"/>' +
+          '<line x1="12" y1="17" x2="12.01" y2="17"/>' +
+        '</svg>' +
+      '</div>' +
+      '<div class="warn-title">Pflichtfelder unvollständig</div>' +
+      '<div class="warn-msg">Folgende Angaben fehlen noch:</div>' +
+      '<div class="warn-missing" id="warnBadges">' + buildBadges(missingList) + '</div>' +
+      '<div class="warn-msg" style="font-size:11px;color:#888;">Felder ergänzen und erneut prüfen, oder Druck trotzdem fortfahren.</div>' +
+      '<div class="warn-buttons">' +
+        '<button class="warn-btn" id="warnClose">Zurück &amp; Ergänzen</button>' +
+        '<button class="warn-btn-recheck" id="warnRecheck">🔄 Erneut prüfen</button>' +
+        '<button class="warn-btn-skip" id="warnSkip">Trotzdem drucken</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+
+  function closeOverlay() {
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity .15s';
+    setTimeout(function() {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }, 160);
+    highlightMissing([], false);
+  }
+
+  document.getElementById('warnClose').addEventListener('click', closeOverlay);
+
+  document.getElementById('warnRecheck').addEventListener('click', function() {
+    var stillMissing = checkPflicht();
+    if (stillMissing.length === 0) {
+      closeOverlay();
+      setTimeout(function() { doPrintExec(); }, 200);
+    } else {
+      highlightMissing(stillMissing, true);
+      var badges = document.getElementById('warnBadges');
+      if (badges) badges.innerHTML = buildBadges(stillMissing);
+      playWarnSound();
+    }
+  });
+
+  document.getElementById('warnSkip').addEventListener('click', function() {
+    closeOverlay();
+    setTimeout(onConfirm, 180);
+  });
+
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeOverlay();
+  });
+}
+
 // ── PDF Export ──
 function doPrint() {
+  var missing = checkPflicht();
+  if (missing.length > 0) {
+    showWarnPopup(missing, function() { doPrintExec(); });
+    return;
+  }
+  doPrintExec();
+}
+
+function doPrintExec() {
   var allInputs    = document.querySelectorAll('.main input[type="text"]');
   var allTextareas = document.querySelectorAll('.main textarea:not(.sig-author-input)');
   var idInputs     = document.querySelectorAll('.id-strip input[type="text"]');
@@ -863,7 +1162,7 @@ function doPrint() {
     }
     window.addEventListener('afterprint', afterPrint);
   }, 250);
-}
+} // end doPrintExec
 
 // ── Theme (null-safe) ──
 var dark = true;
@@ -876,6 +1175,41 @@ function toggleTheme() {
   if (icon) icon.innerHTML = dark
     ? '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>'
     : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+}
+
+// ── Vitalzeichen-Ampel ──
+// Grenzwerte:
+//   RR syst.:  OK 90–139 | WARN 140–179 oder 80–89 | CRIT ≥180 oder <80
+//   RR diast.: OK 60–89  | WARN 90–109 oder 50–59  | CRIT ≥110 oder <50
+//   Puls:      OK 60–99  | WARN 100–119 oder 50–59  | CRIT ≥120 oder <50
+//   SpO2:      OK ≥95    | WARN 90–94               | CRIT <90
+function checkVital(el) {
+  var raw = el.value.trim().replace(',', '.');
+  el.classList.remove('vt-ok', 'vt-warn', 'vt-crit');
+  if (raw === '' || raw === '--') return;
+  var v = parseFloat(raw);
+  if (isNaN(v)) return;
+  var type = el.getAttribute('data-vt');
+  var state = 'ok';
+
+  if (type === 'rr-syst') {
+    if (v >= 180 || v < 80)          state = 'crit';
+    else if (v >= 140 || v < 90)     state = 'warn';
+    else                              state = 'ok';
+  } else if (type === 'rr-diast') {
+    if (v >= 110 || v < 50)          state = 'crit';
+    else if (v >= 90 || v < 60)      state = 'warn';
+    else                              state = 'ok';
+  } else if (type === 'puls') {
+    if (v >= 120 || v < 50)          state = 'crit';
+    else if (v >= 100 || v < 60)     state = 'warn';
+    else                              state = 'ok';
+  } else if (type === 'spo2') {
+    if (v < 90)                       state = 'crit';
+    else if (v < 95)                  state = 'warn';
+    else                              state = 'ok';
+  }
+  el.classList.add('vt-' + state);
 }
 
 // ── postMessage bridge (nur 1 Listener) ──

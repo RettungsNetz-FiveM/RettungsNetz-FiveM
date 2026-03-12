@@ -386,6 +386,29 @@ header {
       <button class="hbtn pri" onclick="fzPrint()">🖨 Drucken</button>
     </div>
 
+    <!-- ── ATEMSCHUTZ toolbar ── -->
+    <div class="toolbar-panel" id="tb-atemschutz">
+      <div class="tb-sep"></div>
+      <button class="hbtn" id="btn-atem-theme" onclick="atemTheme()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+        <span id="atem-theme-label">Hell</span>
+      </button>
+      <div class="tb-sep"></div>
+      <button class="hbtn pri" onclick="atemPrint()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13">
+          <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        Als PDF drucken
+      </button>
+    </div>
+
+    <!-- ── SCHEMA toolbar ── -->
+    <div class="toolbar-panel" id="tb-schema"></div>
+
   </div><!-- /h-toolbar -->
 </header>
 
@@ -424,6 +447,20 @@ header {
         <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
       </span>
       <span class="nav-label">MANV</span>
+    </button>
+
+    <button class="nav-btn" id="nav-atemschutz" onclick="openTool('atemschutz')" title="Atemschutzüberwachung">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="10" ry="7"/><path d="M2 12s3-4 10-4 10 4 10 4"/><circle cx="12" cy="12" r="2.5"/></svg>
+      </span>
+      <span class="nav-label">Atem&shy;schutz</span>
+    </button>
+
+    <button class="nav-btn" id="nav-schema" onclick="openTool('schema')" title="Schema-Nachschlagewerk">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/></svg>
+      </span>
+      <span class="nav-label">Schema</span>
     </button>
 
     <div class="sidebar-divider"></div>
@@ -494,10 +531,38 @@ header {
               <button class="mc-open-btn">Öffnen →</button>
             </div>
           </div>
+          <div class="module-card" data-accent="red" onclick="openTool('atemschutz')">
+            <div class="mc-header">
+              <div class="mc-icon-wrap">🫁</div>
+              <div class="mc-meta">
+                <div class="mc-tag">Modul 04 · Atemschutz</div>
+                <div class="mc-title">Atemschutzüberwachung</div>
+              </div>
+            </div>
+            <div class="mc-desc">Überwachungstafel für Atemschutzgeräteträger. Trupps, Druckmeldungen, Countdown-Timer und Statusübersicht für den Atemschutzeinsatz.</div>
+            <div class="mc-footer">
+              <span class="mc-status">Bereit</span>
+              <button class="mc-open-btn">Öffnen →</button>
+            </div>
+          </div>
+          <div class="module-card" data-accent="blu" onclick="openTool('schema')">
+            <div class="mc-header">
+              <div class="mc-icon-wrap">📖</div>
+              <div class="mc-meta">
+                <div class="mc-tag">Modul 05 · Nachschlagewerk</div>
+                <div class="mc-title">Schema-Nachschlagewerk</div>
+              </div>
+            </div>
+            <div class="mc-desc">Medizinische Einsatzschemata zum Nachschlagen: SSSS, xABCDE, SAMPLER, OPQRST, (BE)FAST, GCS, 4H &amp; HITS, AVPU/WASB und mehr.</div>
+            <div class="mc-footer">
+              <span class="mc-status">Bereit</span>
+              <button class="mc-open-btn">Öffnen →</button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="sysinfo-grid">
-        <div class="sysinfo-cell"><span class="sysinfo-label">Verfügbare Module</span><span class="sysinfo-val">3</span><span class="sysinfo-note">Schnell · Einfach · Kompakt</span></div>
+        <div class="sysinfo-cell"><span class="sysinfo-label">Verfügbare Module</span><span class="sysinfo-val">5</span><span class="sysinfo-note">Schnell · Einfach · Kompakt</span></div>
         <div class="sysinfo-cell"><span class="sysinfo-label">Plattform</span><span class="sysinfo-val">Web</span><span class="sysinfo-note">Browser-basiert · Offline-fähig</span></div>
         <div class="sysinfo-cell"><span class="sysinfo-label">Version</span><span class="sysinfo-val">1.0</span><span class="sysinfo-note">Build 2025.03</span></div>
       </div>
@@ -516,6 +581,16 @@ header {
     <!-- ── MANV TRIAGE ── -->
     <div class="tool-view" id="view-manv">
       <iframe class="tool-frame" id="frame-manv" src="" title="MANV Triage"></iframe>
+    </div>
+
+    <!-- ── ATEMSCHUTZ ── -->
+    <div class="tool-view" id="view-atemschutz">
+      <iframe class="tool-frame" id="frame-atemschutz" src="" title="Atemschutzüberwachung"></iframe>
+    </div>
+
+    <!-- ── SCHEMA NACHSCHLAGEWERK ── -->
+    <div class="tool-view" id="view-schema">
+      <iframe class="tool-frame" id="frame-schema" src="" title="Schema-Nachschlagewerk"></iframe>
     </div>
 
     <!-- ── INFO ── -->
@@ -559,11 +634,13 @@ header {
 // VIEW / MODULE STATE
 // ════════════════════════════════
 const MODULE_META = {
-  dashboard: { label: 'Aktives Modul',            name: 'Start · Übersicht'   },
-  protokol:  { label: 'Modul 01 · Dokumentation', name: 'Einsatz-Protokoll'   },
-  fahrzeug:  { label: 'Modul 02 · Planung',        name: 'Fahrzeug-Planer'     },
-  manv:      { label: 'Modul 03 · MANV · Triage',  name: 'MANV Triage'         },
-  info:      { label: 'Aktives Modul',             name: 'Info · Hilfe'        },
+  dashboard:  { label: 'Aktives Modul',              name: 'Start · Übersicht'       },
+  protokol:   { label: 'Modul 01 · Dokumentation',  name: 'Einsatz-Protokoll'       },
+  fahrzeug:   { label: 'Modul 02 · Planung',         name: 'Fahrzeug-Planer'         },
+  manv:       { label: 'Modul 03 · MANV · Triage',   name: 'MANV Triage'             },
+  atemschutz: { label: 'Modul 04 · Atemschutz',      name: 'Atemschutzüberwachung'   },
+  schema:     { label: 'Modul 05 · Nachschlagewerk', name: 'Schema-Nachschlagewerk'  },
+  info:       { label: 'Aktives Modul',              name: 'Info · Hilfe'            },
 };
 
 let currentView = 'dashboard';
@@ -593,7 +670,7 @@ const frameLoaded = {};
 function openTool(tool) {
   showView(tool);
   if (!frameLoaded[tool]) {
-    const src = { protokol: 'Einsatz-Protokol.html', fahrzeug: 'Fahrzeugplaner.html', manv: 'MANV-Triage.html' };
+    const src = { protokol: 'Einsatz-Protokol.html', fahrzeug: 'Fahrzeugplaner.html', manv: 'MANV-Triage.html', atemschutz: 'Atemschutzueberwachung.html', schema: 'Schema-Nachschlage.html' };
     const f = document.getElementById('frame-' + tool);
     if (f && src[tool]) { f.src = src[tool]; frameLoaded[tool] = true; }
   }
@@ -649,6 +726,29 @@ function fzSetMode(mode) {
   });
   // Tell iframe
   fzSend('setMode', mode);
+}
+
+// ── Atemschutz ──
+let _atemDark = true;
+function atemTheme() {
+  _atemDark = !_atemDark;
+  document.getElementById('atem-theme-label').textContent = _atemDark ? 'Hell' : 'Dunkel';
+  const f = document.getElementById('frame-atemschutz');
+  if (!f) return;
+  function doCall() {
+    try { f.contentWindow.toggleTheme(); } catch(e) {}
+  }
+  if (f.contentDocument && f.contentDocument.readyState === 'complete') { doCall(); }
+  else { f.addEventListener('load', doCall, { once: true }); }
+}
+function atemPrint() {
+  const f = document.getElementById('frame-atemschutz');
+  if (!f) return;
+  function doCall() {
+    try { f.contentWindow.doPrint(); } catch(e) {}
+  }
+  if (f.contentDocument && f.contentDocument.readyState === 'complete') { doCall(); }
+  else { f.addEventListener('load', doCall, { once: true }); }
 }
 
 // ── Listen for messages back from iframes ──

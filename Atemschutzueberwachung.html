@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atemschutzüberwachung – Feuerwehr</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<style>
+[data-theme="light"] {
+  --bg:#E8E3DC; --card:#FFFFFF; --g1:#1A1A1A; --g2:#2D2D2D; --g4:#888888;
+  --g5:#B8B8B8; --g6:#E0E0E0; --g7:#F4F3F1; --bd:1px solid #D4CEC8;
+  --inp-bg:#F4F3F1; --inp-foc:#FFFFFF; --strip-bg:#1A1A1A; --strip-c:#888;
+  --strip-v:#FFFFFF; --head-bg:#F4F3F1;
+}
+[data-theme="dark"] {
+  --bg:#141414; --card:#1E1E1E; --g1:#E8E8E8; --g2:#CCCCCC; --g4:#777777;
+  --g5:#555555; --g6:#333333; --g7:#282828; --bd:1px solid #383838;
+  --inp-bg:#282828; --inp-foc:#2E2E2E; --strip-bg:#0A0A0A; --strip-c:#666;
+  --strip-v:#E0E0E0; --head-bg:#252525;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --rot:#C0392B; --rot-d:#922B21; --orange:#E67E22; --orange-d:#CA6F1E;
+  --gelb:#F39C12; --gruen:#27AE60; --gruen-d:#1E8449; --blau:#1A6B9A;
+  --gap:2px;
+  --c-einsatz:#C0392B; --c-trupp:#1A6B9A; --c-status:#27AE60;
+  --c-druck:#E67E22; --c-timer:#1A6B9A;
+}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--g1);font-size:12px;min-height:100vh;transition:background .25s,color .25s;}
+
+
+/* MAIN */
+.main{width:100%;padding:8px 8px 60px;display:flex;flex-direction:column;gap:var(--gap);}
+
+/* ID STRIP */
+.id-strip{background:var(--strip-bg);display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+.id-field{display:flex;align-items:center;gap:6px;}
+.id-field span{color:var(--strip-c);white-space:nowrap;font-size:10px;}
+.id-field input{background:transparent;border:none;border-bottom:1px solid #444;color:var(--strip-v);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:1px 4px;outline:none;}
+.id-field input:focus{border-bottom-color:var(--rot);}
+.id-field input.wide{width:200px;} .id-field input.med{width:115px;} .id-field input.sm{width:75px;}
+
+/* ROW / SECTION */
+.row{display:flex;gap:var(--gap);align-items:stretch;width:100%;}
+.section{background:var(--card);border-left:4px solid transparent;display:flex;flex-direction:column;flex:1;min-width:0;transition:background .25s;}
+.s-head{background:var(--head-bg);padding:5px 11px;display:flex;align-items:center;gap:7px;border-bottom:var(--bd);flex-shrink:0;transition:background .25s;}
+.s-num{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;min-width:18px;}
+.s-title{font-size:9px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--g2);}
+.s-body{padding:9px 11px;flex:1;display:flex;flex-direction:column;gap:7px;}
+
+/* GRIDS / FIELDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 10px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px 10px;}
+.c2{grid-column:span 2;} .c3{grid-column:span 3;} .c4{grid-column:span 4;}
+.f{display:flex;flex-direction:column;gap:2px;}
+.f>label{font-size:8px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--g4);}
+.f input,.f select,.f textarea{width:100%;border:var(--bd);background:var(--inp-bg);padding:5px 7px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--g1);outline:none;transition:border-color .15s,background .25s;border-radius:0;appearance:none;-webkit-appearance:none;}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--rot);background:var(--inp-foc);}
+.f textarea{resize:vertical;min-height:52px;line-height:1.45;}
+.f select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;padding-right:22px;}
+.vt-time-cell{display:flex;align-items:center;gap:2px;}
+.vt-time-cell input{flex:1;min-width:0;}
+.btn-now{background:var(--rot);color:#fff;border:none;cursor:pointer;font-size:8px;font-weight:700;padding:3px 6px;white-space:nowrap;font-family:'IBM Plex Sans',sans-serif;flex-shrink:0;transition:background .15s;line-height:1.2;}
+.btn-now:hover{background:var(--rot-d);}
+.sub-lbl{font-size:8px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--g4);}
+
+/* ══ TIMER PANEL ══ */
+.timer-panel{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;padding:4px 0;}
+.timer-card{
+  background:var(--head-bg);border:1px solid var(--g6);
+  display:flex;flex-direction:column;min-width:260px;flex:1;
+  position:relative;overflow:hidden;transition:border-color .25s,box-shadow .25s;
+}
+.timer-card.tc-running{border-color:var(--blau);}
+.timer-card.tc-warn{border-color:var(--gelb);box-shadow:0 0 10px rgba(243,156,18,.3);}
+.timer-card.tc-alert{border-color:var(--rot);box-shadow:0 0 18px rgba(192,57,43,.7);animation:cardPulse .65s ease-in-out infinite;}
+@keyframes cardPulse{0%,100%{box-shadow:0 0 14px rgba(192,57,43,.5);}50%{box-shadow:0 0 32px rgba(192,57,43,1);}}
+
+.timer-card-top{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:var(--bd);}
+.timer-name-inp{background:transparent;border:none;border-bottom:1px solid var(--g6);color:var(--g1);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;outline:none;width:100%;padding:2px 3px;flex:1;}
+.timer-name-inp:focus{border-bottom-color:var(--blau);}
+.timer-interval-sel{font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--inp-bg);border:var(--bd);color:var(--g2);padding:5px 28px 5px 9px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%23666'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;width:110px;flex-shrink:0;}
+.btn-rm-timer{background:transparent;border:none;cursor:pointer;color:var(--g5);font-size:11px;padding:0 3px;line-height:1;transition:color .15s;flex-shrink:0;}
+.btn-rm-timer:hover{color:var(--rot);}
+
+.timer-body{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;gap:10px;}
+.timer-display{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:42px;line-height:1;letter-spacing:.03em;color:var(--blau);transition:color .3s;min-width:110px;}
+.tc-warn  .timer-display{color:var(--gelb);}
+.tc-alert .timer-display{color:var(--rot);animation:blinkDisp .55s step-start infinite;}
+@keyframes blinkDisp{0%,100%{opacity:1;}50%{opacity:.1;}}
+
+/* SVG ring  (r=19, cx=cy=23) */
+.timer-ring-wrap{position:relative;width:64px;height:64px;flex-shrink:0;}
+.timer-ring-wrap svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--g6);stroke-width:4;}
+.ring-fg{fill:none;stroke:var(--blau);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .3s;}
+.tc-warn  .ring-fg{stroke:var(--gelb);}
+.tc-alert .ring-fg{stroke:var(--rot);}
+.ring-pct{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;color:var(--g4);text-align:center;pointer-events:none;}
+
+.timer-controls{display:flex;flex-direction:column;gap:3px;align-items:stretch;}
+.btn-tc{border:var(--bd);background:var(--inp-bg);color:var(--g2);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 12px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;white-space:nowrap;}
+.btn-tc:hover{border-color:var(--blau);color:var(--blau);}
+.btn-tc.tc-start{background:var(--blau);border-color:var(--blau);color:#fff;}
+.btn-tc.tc-start:hover{background:#155a84;}
+.btn-tc.tc-stop{opacity:.5;}
+.btn-tc.tc-stop.active{opacity:1;background:var(--g6);}
+.btn-tc.tc-reset{opacity:.7;}
+.btn-tc.tc-ack{background:var(--gruen);border-color:var(--gruen);color:#fff;display:none;}
+.btn-tc.tc-ack.show{display:block;}
+.btn-tc.tc-ack:hover{background:var(--gruen-d);}
+
+.timer-foot{padding:3px 10px 6px;font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--g4);display:flex;align-items:center;gap:5px;border-top:var(--bd);}
+.foot-dot{width:5px;height:5px;border-radius:50%;background:var(--g5);flex-shrink:0;transition:background .3s;}
+.tc-alert .foot-dot{background:var(--rot);animation:blinkDisp .5s step-start infinite;}
+.tc-warn  .foot-dot{background:var(--gelb);}
+.tc-running .foot-dot{background:var(--blau);}
+
+.btn-add-timer{background:transparent;border:1px dashed var(--g5);color:var(--g4);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 16px;cursor:pointer;transition:border-color .15s,color .15s;align-self:flex-start;margin-top:4px;}
+.btn-add-timer:hover{border-color:var(--blau);color:var(--blau);}
+
+/* TABLE */
+.as-table-wrap{overflow-x:auto;}
+.as-table{width:100%;border-collapse:collapse;font-size:13px;font-family:'IBM Plex Mono',monospace;min-width:960px;}
+.as-table th{background:var(--head-bg);border:var(--bd);padding:8px 9px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--g4);text-align:center;white-space:nowrap;}
+.as-table th.th-nr{width:34px;} .as-table th.th-name{width:180px;text-align:left;} .as-table th.th-funk{width:120px;text-align:left;}
+.as-table th.th-gerat{width:90px;} .as-table th.th-druck{width:78px;color:var(--orange);} .as-table th.th-time{width:90px;}
+.as-table th.th-alarm{width:88px;color:#C0392B;} .as-table th.th-status{width:130px;} .as-table th.th-bem{min-width:140px;}
+.as-table .grp-head td{background:#1a1a2e;padding:5px 10px;font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#4a5a88;border:var(--bd);}
+[data-theme="light"] .as-table .grp-head td{background:#e8ecf4;color:#8899bb;}
+.as-table tbody tr.as-row td{border:var(--bd);padding:2px;vertical-align:middle;}
+.as-table tbody tr.as-row:nth-child(even) td{background:rgba(255,255,255,0.02);}
+[data-theme="light"] .as-table tbody tr.as-row:nth-child(even) td{background:rgba(0,0,0,0.02);}
+.as-table tbody tr.as-row:hover td{background:rgba(192,57,43,0.05);}
+.as-table td input[type="text"],.as-table td input[type="number"]{width:100%;border:none;background:transparent;padding:6px 8px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--g1);outline:none;text-align:center;}
+.as-table td input[type="text"].left{text-align:left;}
+.as-table td input:focus{background:var(--inp-foc);}
+.td-nr{text-align:center;font-size:11px;font-weight:700;color:var(--g5);padding:0 4px !important;}
+.td-druck input{font-weight:700;font-size:14px !important;color:var(--orange) !important;}
+.td-alarm input{font-weight:700;color:var(--rot) !important;}
+.status-sel{width:100%;border:var(--bd);background:var(--inp-bg);outline:none;cursor:pointer;padding:5px 22px 5px 7px;font-size:11px;font-weight:700;font-family:'IBM Plex Sans',sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--g1);appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;transition:border-color .15s,background .25s;border-radius:0;}
+.status-sel:focus{border-color:var(--rot);background:var(--inp-foc);}
+.status-sel option{color:var(--g1);background:var(--inp-bg);font-weight:600;}
+.status-sel[data-v="aktiv"]{color:var(--gruen);}
+.status-sel[data-v="alarm1"]{color:var(--orange);}
+.status-sel[data-v="alarm2"]{color:var(--rot);animation:blinkRed .8s step-start infinite;}
+.status-sel[data-v="rueck"]{color:var(--blau);}
+.status-sel[data-v="rueck-alarm"]{color:var(--rot);font-size:11px;font-weight:900;letter-spacing:.12em;animation:blinkRed .4s step-start infinite;}
+.status-sel[data-v="draussen"]{color:var(--g4);}
+.status-sel[data-v="notfall"]{color:var(--rot);font-size:10px;animation:blinkRed .5s step-start infinite;}
+@keyframes blinkRed{0%,100%{opacity:1;}50%{opacity:.2;}}
+@keyframes blinkDot{0%,100%{opacity:1;}50%{opacity:0;}}
+.druck-wrap{position:relative;}
+.druck-bar{position:absolute;left:0;top:0;bottom:0;background:rgba(230,126,34,.12);pointer-events:none;transition:width .3s;}
+.btn-add-row{background:transparent;border:1px dashed var(--g5);color:var(--g4);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;cursor:pointer;width:100%;margin-top:6px;transition:border-color .15s,color .15s;}
+.btn-add-row:hover{border-color:var(--rot);color:var(--rot);}
+.btn-del{background:transparent;border:none;cursor:pointer;color:var(--g5);font-size:12px;padding:2px 6px;line-height:1;transition:color .15s;}
+.btn-del:hover{color:var(--rot);}
+
+/* ALARM BADGES / LEGEND */
+.alarm-badges{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.alarm-badge{display:flex;align-items:center;gap:6px;padding:4px 10px;border:var(--bd);font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.alarm-badge.gelb{border-color:var(--gelb);color:var(--gelb);background:rgba(243,156,18,.06);}
+.alarm-badge.orange{border-color:var(--orange);color:var(--orange);background:rgba(230,126,34,.06);}
+.alarm-badge.rot{border-color:var(--rot);color:var(--rot);background:rgba(192,57,43,.06);}
+.alarm-badge .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.alarm-badge.gelb .dot{background:var(--gelb);} .alarm-badge.orange .dot{background:var(--orange);} .alarm-badge.rot .dot{background:var(--rot);}
+.legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:6px 0;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--g4);}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ALERT MODAL */
+.alert-modal{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);align-items:center;justify-content:center;}
+.alert-modal.show{display:flex;}
+.alert-box{background:#180808;border:2px solid var(--rot);padding:32px 44px;text-align:center;max-width:400px;width:90%;box-shadow:0 0 80px rgba(192,57,43,.9);}
+.alert-icon{font-size:36px;line-height:1;margin-bottom:10px;animation:blinkRed .5s step-start infinite;}
+.alert-title{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;color:var(--rot);letter-spacing:.25em;text-transform:uppercase;margin-bottom:8px;}
+.alert-trupp{font-family:'IBM Plex Mono',monospace;font-size:14px;color:#E8E8E8;margin-bottom:5px;font-weight:700;}
+.alert-sub{font-size:11px;color:var(--g4);margin-bottom:22px;line-height:1.5;}
+.btn-alert-ok{background:var(--rot);border:none;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;padding:11px 32px;cursor:pointer;transition:background .15s;}
+.btn-alert-ok:hover{background:var(--rot-d);}
+
+/* PRINT */
+@media print{
+  @page{size:A3 landscape;margin:5mm;}
+  html,body{background:white !important;font-size:10px;color:#000 !important;}
+  .btn-print,.btn-theme,.btn-now,.btn-add-row,.btn-del,.row:has(.timer-panel),.btn-add-timer,.alert-modal{display:none !important;}
+  .main{padding:0 !important;}
+  .section{background:white !important;break-inside:avoid;}
+  .row{break-inside:avoid;}
+  .id-strip{background:#111 !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+  .s-head{background:#f2f2f2 !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+  .as-table th{background:#f2f2f2 !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+  .alarm-badge{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+  .as-table{min-width:unset;}
+}
+body.printing input::placeholder,body.printing textarea::placeholder{color:transparent !important;}
+</style>
+</head>
+<body>
+
+<!-- ALERT MODAL -->
+<div class="alert-modal" id="alertModal">
+  <div class="alert-box">
+    <div class="alert-icon">🔔</div>
+    <div class="alert-title">Druckmeldung fällig!</div>
+    <div class="alert-trupp" id="alertTrupp">—</div>
+    <div class="alert-sub">Sofort Luftdruck abfragen und im<br>Protokoll eintragen!</div>
+    <button class="btn-alert-ok" onclick="closeAlert()">✔ Quittieren &amp; Timer neu starten</button>
+  </div>
+</div>
+
+
+<div class="main">
+
+  <!-- ID STRIP -->
+  <div class="id-strip">
+    <div class="id-field"><span>Einsatz-Nr.</span><input class="med" type="text" id="enr" placeholder="E-Nr. / Stichwort"></div>
+    <div class="id-field"><span>Datum</span><input class="med" type="date" id="einsatz_datum"></div>
+    <div class="id-field"><span>Uhrzeit</span><input class="sm" type="text" id="einsatz_zeit" placeholder="HH:MM"></div>
+    <div class="id-field"><span>Einsatzort</span><input class="wide" type="text" placeholder="Straße, Gebäude, Objekt"></div>
+    <div class="id-field"><span>Einheit</span><input class="med" type="text" placeholder="Florian 01 / LZ Mitte"></div>
+    <div class="id-field"><span>Überwachungsperson</span><input class="wide" type="text" placeholder="Name, Dienstgrad"></div>
+  </div>
+
+  <!-- ROW 1 -->
+  <div class="row">
+    <!-- 01 EINSATZ-DETAILS -->
+    <div class="section" style="border-left-color:var(--c-einsatz);flex:1.4;">
+      <div class="s-head"><span class="s-num" style="color:var(--c-einsatz);">01</span><span class="s-title">Einsatz-Details</span></div>
+      <div class="s-body">
+        <div class="g3">
+          <div class="f"><label>Einsatzart</label>
+            <select><option value="">—</option><option>Brand innen</option><option>Brand außen</option><option>Technische Hilfe</option><option>Gefahrgut</option><option>Übung</option><option>Sonstiges</option></select>
+          </div>
+          <div class="f"><label>Objekt / Gebäude</label><input type="text" placeholder="z. B. Wohngebäude 3. OG"></div>
+          <div class="f"><label>Einsatzleiter</label><input type="text" placeholder="Name, Dienstgrad"></div>
+          <div class="f"><label>Einsatzbeginn (vor Ort)</label><div class="vt-time-cell"><input type="text" id="t_beginn" placeholder="HH:MM"><button class="btn-now" onclick="setNow('t_beginn')">⏱ Zeit</button></div></div>
+          <div class="f"><label>Einsatzende / Abmarsch</label><div class="vt-time-cell"><input type="text" id="t_ende" placeholder="HH:MM"><button class="btn-now" onclick="setNow('t_ende')">⏱ Zeit</button></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 BESONDERE VORKOMMNISSE -->
+    <div class="section" style="border-left-color:#7B3FA0;flex:1.5;">
+      <div class="s-head"><span class="s-num" style="color:#7B3FA0;">02</span><span class="s-title">Besondere Vorkommnisse / Ereignislog</span></div>
+      <div class="s-body">
+        <div class="g4" style="margin-bottom:4px;">
+          <div class="f"><label>Notruf / Notfall ausgelöst um</label><div class="vt-time-cell"><input type="text" id="t_notfall" placeholder="HH:MM"><button class="btn-now" onclick="setNow('t_notfall')">⏱ Zeit</button></div></div>
+          <div class="f"><label>Betroffene Person(en)</label><input type="text" placeholder="Name(n) / Trupp"></div>
+          <div class="f c2"><label>Art des Vorkommnisses</label>
+            <select><option value="">—</option><option>Gerätausfall</option><option>Druckabfall / Leck</option><option>Verletzung</option><option>Orientierungslosigkeit</option><option>Atemnotsignal</option><option>Verbindungsabbruch Funk</option><option>Sonstiges</option></select>
+          </div>
+        </div>
+        <div class="f" style="flex:1;display:flex;flex-direction:column;">
+          <label>Ereignislog / Chronologie</label>
+          <textarea style="flex:1;min-height:80px;resize:none;font-family:'IBM Plex Mono',monospace;font-size:10px;" placeholder="HH:MM — Ereignis / Maßnahme&#10;HH:MM — …"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: TABELLE -->
+  <div class="row">
+    <div class="section" style="border-left-color:var(--c-trupp);">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-trupp);">03</span>
+        <span class="s-title">Atemschutz-Überwachungstafel — Trupps &amp; Geräteträger</span>
+      </div>
+      <div class="s-body" style="padding:6px 8px;">
+        <div class="as-table-wrap">
+          <table class="as-table">
+            <thead>
+              <tr>
+                <th style="text-align:left;min-width:220px;">Name</th>
+                <th class="th-druck">Fülldruck<br><span style="color:var(--g5);font-weight:400;">(bar)</span></th>
+                <th class="th-time">Eingang<br><span style="color:var(--g5);font-weight:400;">HH:MM</span></th>
+                <th class="th-time">Ausgang<br><span style="color:var(--g5);font-weight:400;">HH:MM</span></th>
+                <th class="th-druck" style="color:var(--gelb);">Druck<br>1. Meldung</th>
+                <th class="th-time" style="color:var(--gelb);">Zeit<br>1. Meldung</th>
+                <th class="th-druck" style="color:var(--orange);">Druck<br>2. Meldung</th>
+                <th class="th-time" style="color:var(--orange);">Zeit<br>2. Meldung</th>
+                <th style="min-width:140px;">Status</th>
+                <th class="th-bem">Bemerkungen</th>
+                <th style="width:30px;"></th>
+              </tr>
+            </thead>
+            <tbody id="as-tbody">
+              <tr class="grp-head"><td colspan="11">▸ TRUPP 1 — Angriffstrupp</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="btn-add-row" onclick="addRow()">+ Geräteträger hinzufügen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: COUNTDOWN TIMER + ABSCHLUSS nebeneinander -->
+  <div class="row">
+    <!-- 04 COUNTDOWN TIMER -->
+    <div class="section" style="border-left-color:var(--c-timer);flex:1.6;">
+      <div class="s-head">
+        <span class="s-num" style="color:var(--c-timer);">04</span>
+        <span class="s-title">Druckabfrage-Countdown — pro Trupp</span>
+        <span style="flex:1;"></span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--g4);letter-spacing:.05em;">Interval wählen → ▶ Starten → Alarm bei Ablauf → Quittieren startet automatisch neu</span>
+      </div>
+      <div class="s-body" style="padding:8px 11px 10px;">
+        <div class="timer-panel" id="timerPanel"></div>
+        <button class="btn-add-timer" onclick="addTimer()">+ Trupp-Timer hinzufügen</button>
+      </div>
+    </div>
+
+    <!-- 05 ABSCHLUSS & UNTERSCHRIFT -->
+    <div class="section" style="border-left-color:var(--c-status);flex:1;">
+      <div class="s-head"><span class="s-num" style="color:var(--c-status);">05</span><span class="s-title">Abschluss &amp; Unterschrift</span></div>
+      <div class="s-body">
+        <div class="g2">
+          <div class="f"><label>Alle Geräteträger rückgemeldet um</label><div class="vt-time-cell"><input type="text" id="t_rueck" placeholder="HH:MM"><button class="btn-now" onclick="setNow('t_rueck')">⏱ Zeit</button></div></div>
+          <div class="f"><label>Atemschutzgeräte geprüft / abgegeben</label>
+            <select><option value="">—</option><option>Ja, vollständig</option><option>Teilweise</option><option>Nein</option></select>
+          </div>
+          <div class="f c2"><label>Abschlussbemerkung</label>
+            <textarea style="min-height:50px;resize:none;" placeholder="Sonstige Hinweise, Qualitätssicherung …"></textarea>
+          </div>
+        </div>
+        <div style="margin-top:8px;">
+          <div class="sub-lbl" style="margin-bottom:4px;">Unterschrift Atemschutzüberwacher</div>
+          <div style="border:var(--bd);background:var(--inp-bg);min-height:60px;display:flex;align-items:center;justify-content:center;">
+            <textarea rows="2" style="width:100%;border:none;background:transparent;outline:none;resize:none;font-family:'Dancing Script',cursive;font-size:26px;color:var(--g1);line-height:1.2;text-align:center;padding:6px 10px;" placeholder="Hier unterschreiben …" spellcheck="false"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════
+//  TIMER ENGINE
+// ═══════════════════════════════════════════
+var CIRC = 2 * Math.PI * 19; // ring circumference (r=19)
+var timerCount  = 0;
+var timers      = {};   // id → state
+var alertQueue  = [];
+var alertActive = false;
+var currentAlertId = null;
+
+/* --- Audio beep --- */
+function beep() {
+  try {
+    var ac = new (window.AudioContext || window.webkitAudioContext)();
+    [[880,0,0.12],[880,0.16,0.12],[1100,0.33,0.22]].forEach(function(t){
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.type = 'square'; o.frequency.value = t[0];
+      g.gain.setValueAtTime(0.28, ac.currentTime + t[1]);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + t[1] + t[2]);
+      o.start(ac.currentTime + t[1]);
+      o.stop(ac.currentTime + t[1] + t[2] + 0.05);
+    });
+  } catch(e){}
+}
+
+/* --- Modal --- */
+function triggerAlert(id) {
+  alertQueue.push(id);
+  if (!alertActive) flushAlert();
+}
+function flushAlert() {
+  if (!alertQueue.length) { alertActive = false; return; }
+  alertActive = true;
+  currentAlertId = alertQueue.shift();
+  var t = timers[currentAlertId];
+  var name = t ? t.name : currentAlertId;
+  document.getElementById('alertTrupp').textContent = name;
+  document.getElementById('alertModal').classList.add('show');
+  beep();
+  // repeat beep while open
+  var bloop = setInterval(function(){
+    if (!document.getElementById('alertModal').classList.contains('show')){ clearInterval(bloop); return; }
+    beep();
+  }, 2200);
+  document.getElementById('alertModal')._bloop = bloop;
+}
+function closeAlert() {
+  clearInterval(document.getElementById('alertModal')._bloop);
+  document.getElementById('alertModal').classList.remove('show');
+  // Auto-restart the timer that triggered
+  if (currentAlertId && timers[currentAlertId]) {
+    resetAndStart(currentAlertId);
+  }
+  currentAlertId = null;
+  setTimeout(flushAlert, 280);
+}
+
+/* --- Timer card --- */
+function addTimer(name) {
+  timerCount++;
+  var id = 'tc' + timerCount;
+  // Count currently active timers to get display number
+  var activeCount = Object.keys(timers).length + 1;
+  var nm = name || ('Trupp ' + activeCount);
+  timers[id] = { name: nm, intervalSec: 300, remaining: 300, running: false, iid: null };
+
+  var panel = document.getElementById('timerPanel');
+  var div = document.createElement('div');
+  div.className = 'timer-card';
+  div.id = id;
+  div.innerHTML =
+    // TOP
+    '<div class="timer-card-top">' +
+      '<input class="timer-name-inp" type="text" value="'+escH(nm)+'" onchange="timers[\''+id+'\'].name=this.value" placeholder="Trupp-Name">' +
+      '<select class="timer-interval-sel" onchange="changeInterval(\''+id+'\',this.value)">' +
+        '<option value="60">1 min</option>' +
+        '<option value="180">3 min</option>' +
+        '<option value="300" selected>5 min</option>' +
+        '<option value="420">7 min</option>' +
+        '<option value="600">10 min</option>' +
+      '</select>' +
+      '<button class="btn-rm-timer" onclick="removeTimer(\''+id+'\')" title="Entfernen">✕</button>' +
+    '</div>' +
+    // BODY
+    '<div class="timer-body">' +
+      '<div class="timer-display" id="disp-'+id+'">05:00</div>' +
+      '<div class="timer-controls">' +
+        '<button class="btn-tc tc-start" id="bs-'+id+'" onclick="startTimer(\''+id+'\')">▶ Start</button>' +
+        '<button class="btn-tc tc-stop"  id="bp-'+id+'" onclick="pauseTimer(\''+id+'\')">⏸ Pause</button>' +
+        '<button class="btn-tc tc-reset" id="br-'+id+'" onclick="resetTimer(\''+id+'\')">↺ Reset</button>' +
+        '<button class="btn-tc tc-ack"   id="ba-'+id+'" onclick="ackTimer(\''+id+'\')">✔ Quittieren</button>' +
+      '</div>' +
+    '</div>' +
+    // FOOT
+    '<div class="timer-foot" id="foot-'+id+'"><div class="foot-dot"></div><span id="fspan-'+id+'">Bereit — noch nicht gestartet</span></div>';
+  panel.appendChild(div);
+  // Sync state from the actual select value (handles default 5min correctly)
+  var sel = div.querySelector('.timer-interval-sel');
+  if (sel) {
+    var initSec = parseInt(sel.value, 10);
+    timers[id].intervalSec = initSec;
+    timers[id].remaining   = initSec;
+  }
+  renderTimer(id);
+}
+
+function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function removeTimer(id) {
+  stopTicker(id);
+  delete timers[id];
+  var el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function changeInterval(id, val) {
+  stopTicker(id);
+  var t = timers[id]; if (!t) return;
+  t.intervalSec = parseInt(val,10);
+  t.remaining   = t.intervalSec;
+  t.running     = false;
+  setCardClass(id, '');
+  renderTimer(id);
+  setFoot(id, 'Bereit — noch nicht gestartet');
+  showAck(id, false);
+}
+
+function startTimer(id) {
+  var t = timers[id]; if (!t || t.running) return;
+  if (t.remaining <= 0) t.remaining = t.intervalSec;
+  t.running = true;
+  setCardClass(id, 'tc-running');
+  updateBtns(id);
+  var now = new Date();
+  setFoot(id, 'Gestartet ' + pad(now.getHours())+':'+pad(now.getMinutes()) + ' — läuft');
+  t.iid = setInterval(function(){ tick(id); }, 1000);
+}
+
+function pauseTimer(id) {
+  var t = timers[id]; if (!t) return;
+  stopTicker(id);
+  if (t.remaining > 0) setCardClass(id,'');
+  updateBtns(id);
+  setFoot(id, 'Pausiert');
+}
+
+function resetTimer(id) {
+  var t = timers[id]; if (!t) return;
+  stopTicker(id);
+  t.remaining = t.intervalSec;
+  setCardClass(id, '');
+  showAck(id, false);
+  renderTimer(id);
+  setFoot(id, 'Zurückgesetzt');
+  updateBtns(id);
+}
+
+function ackTimer(id) {
+  // manual quittierung from card button (same as modal close for this timer)
+  resetAndStart(id);
+  showAck(id, false);
+}
+
+function resetAndStart(id) {
+  var t = timers[id]; if (!t) return;
+  stopTicker(id);
+  t.remaining = t.intervalSec;
+  setCardClass(id, '');
+  showAck(id, false);
+  renderTimer(id);
+  var now = new Date();
+  setFoot(id, 'Quittiert ' + pad(now.getHours())+':'+pad(now.getMinutes()) + ' — läuft wieder');
+  setTimeout(function(){ startTimer(id); }, 100);
+}
+
+function tick(id) {
+  var t = timers[id]; if (!t) return;
+  t.remaining = Math.max(0, t.remaining - 1);
+  var pct = t.remaining / t.intervalSec;
+  renderTimer(id);
+  if (t.remaining <= 0) {
+    stopTicker(id);
+    setCardClass(id, 'tc-alert');
+    showAck(id, true);
+    var now = new Date();
+    setFoot(id, '⚠ DRUCKABFRAGE FÄLLIG — ' + pad(now.getHours())+':'+pad(now.getMinutes()));
+    updateBtns(id);
+    triggerAlert(id);
+  } else if (pct <= 0.25) {
+    setCardClass(id, 'tc-warn');
+  } else {
+    setCardClass(id, 'tc-running');
+  }
+}
+
+function stopTicker(id) {
+  var t = timers[id]; if (!t) return;
+  if (t.iid) { clearInterval(t.iid); t.iid = null; }
+  t.running = false;
+}
+
+function renderTimer(id) {
+  var t = timers[id]; if (!t) return;
+  var rem = Math.max(0, t.remaining);
+  var m = Math.floor(rem/60), s = rem%60;
+  var dispEl = document.getElementById('disp-'+id);
+  var ringEl = document.getElementById('ring-'+id);
+  if (dispEl) dispEl.textContent = pad(m)+':'+pad(s);
+  if (ringEl) {
+    var pct = t.intervalSec > 0 ? rem/t.intervalSec : 1;
+    ringEl.style.strokeDashoffset = (CIRC*(1-pct)).toFixed(2);
+  }
+}
+
+function setCardClass(id, cls) {
+  var el = document.getElementById(id); if (!el) return;
+  el.classList.remove('tc-running','tc-warn','tc-alert');
+  if (cls) el.classList.add(cls);
+}
+
+function updateBtns(id) {
+  var t = timers[id]; if (!t) return;
+  var bs = document.getElementById('bs-'+id);
+  var bp = document.getElementById('bp-'+id);
+  if (bs) { bs.style.opacity = t.running ? '0.35' : '1'; bs.disabled = t.running; }
+  if (bp) bp.classList.toggle('active', t.running);
+}
+
+function showAck(id, show) {
+  var ba = document.getElementById('ba-'+id);
+  if (ba) ba.classList.toggle('show', show);
+}
+
+function setFoot(id, txt) {
+  var sp = document.getElementById('fspan-'+id);
+  if (sp) sp.textContent = txt;
+}
+
+// ═══════════════════════════════════════════
+//  TABLE ENGINE
+// ═══════════════════════════════════════════
+var rowCount = 0;
+function addGroupHeader(label) {
+  var tbody = document.getElementById('as-tbody');
+  var tr = document.createElement('tr'); tr.className='grp-head';
+  tr.innerHTML='<td colspan="11">▸ '+label+'</td>';
+  tbody.appendChild(tr);
+}
+function addRow(trupp) {
+  rowCount++;
+  var n = rowCount;
+  var tbody = document.getElementById('as-tbody');
+  // If called from button (no trupp arg), auto-create Sonstige header once
+  if (!trupp) {
+    if (!sonstigeHeaderAdded) {
+      var gh = document.createElement('tr'); gh.className='grp-head';
+      gh.innerHTML='<td colspan="11">▸ Sonstige Trupps / Atemschutzträger</td>';
+      tbody.appendChild(gh);
+      sonstigeHeaderAdded = true;
+    }
+    trupp = 'Sonstige';
+  }
+  var tr = document.createElement('tr'); tr.className='as-row'; tr.dataset.row=n;
+  tr.innerHTML=
+    '<td><input type="text" class="left" placeholder="Nachname, Vorname"></td>'+
+    '<td><div class="druck-wrap"><div class="druck-bar" id="bar-fp-'+n+'"></div><input type="number" min="0" max="300" placeholder="300" oninput="updateBar(this,'+n+')"></div></td>'+
+    // Eingang — button sets aktiv
+    '<td><div style="display:flex;align-items:center;gap:2px;"><input type="text" id="ein-'+n+'" placeholder="HH:MM" style="flex:1;" oninput="setAktivOnEntry(this,'+n+')"><button class="btn-now" style="font-size:7px;padding:2px 4px;" onclick="setNowCellAktiv(this,'+n+')">⏱</button></div></td>'+
+    '<td><div style="display:flex;align-items:center;gap:2px;"><input type="text" placeholder="HH:MM" style="flex:1;"><button class="btn-now" style="font-size:7px;padding:2px 4px;" onclick="setNowCellDraussen(this,'+n+')">⏱</button></div></td>'+
+    '<td style="background:rgba(243,156,18,.04);"><input type="number" min="0" max="300" placeholder="—" id="m1-'+n+'" style="color:var(--orange);font-weight:700;" oninput="checkAlarm(this,'+n+')"></td>'+
+    '<td style="background:rgba(243,156,18,.04);"><div style="display:flex;align-items:center;gap:2px;"><input type="text" placeholder="HH:MM" style="flex:1;"><button class="btn-now" style="font-size:7px;padding:2px 4px;" onclick="setNowCell(this)">⏱</button></div></td>'+
+    '<td style="background:rgba(230,126,34,.04);"><input type="number" min="0" max="300" placeholder="—" id="m2-'+n+'" style="color:var(--orange);font-weight:700;" oninput="checkAlarm(this,'+n+')"></td>'+
+    '<td style="background:rgba(230,126,34,.04);"><div style="display:flex;align-items:center;gap:2px;"><input type="text" placeholder="HH:MM" style="flex:1;"><button class="btn-now" style="font-size:7px;padding:2px 4px;" onclick="setNowCell(this)">⏱</button></div></td>'+
+    '<td><select class="status-sel" id="stat-'+n+'" data-v="" onchange="updateStatus(this)">'+
+      '<option value="">— Bereitschaft</option>'+
+      '<option value="aktiv">✔ Aktiv</option>'+
+      '<option value="alarm1">⚠ Warnung 1</option>'+
+      '<option value="alarm2">⚠⚠ Warnung 2</option>'+
+      '<option value="rueck-alarm">🔴 RÜCKZUG</option>'+
+      '<option value="rueck">↩ Im Rückzug</option>'+
+      '<option value="draussen">○ Draußen</option>'+
+      '<option value="notfall">🆘 NOTFALL</option>'+
+    '</select></td>'+
+    '<td><input type="text" class="left" placeholder="Notiz …"></td>'+
+    '<td><button class="btn-del" onclick="delRow(this)">✕</button></td>';
+  tbody.appendChild(tr);
+}
+function delRow(btn){ var tr=btn.closest('tr'); if(tr) tr.remove(); }
+function setNow(id){ var el=document.getElementById(id); if(!el) return; var n=new Date(); el.value=pad(n.getHours())+':'+pad(n.getMinutes()); el.focus(); }
+function setNowCell(btn){ var inp=btn.previousElementSibling; if(!inp) return; var n=new Date(); inp.value=pad(n.getHours())+':'+pad(n.getMinutes()); }
+function setNowCellDraussen(btn, rowId){ var inp=btn.previousElementSibling; if(!inp) return; var n=new Date(); inp.value=pad(n.getHours())+':'+pad(n.getMinutes()); setStatus(rowId,'draussen'); }
+// Eingang ⏱ button — sets time AND switches status to Aktiv
+function setNowCellAktiv(btn, rowId){
+  var inp=btn.previousElementSibling; if(!inp) return;
+  var n=new Date(); inp.value=pad(n.getHours())+':'+pad(n.getMinutes());
+  setStatus(rowId,'aktiv');
+}
+// Eingang typed manually — switch to Aktiv when non-empty
+function setAktivOnEntry(inp, rowId){
+  if(inp.value.trim().length>0) setStatus(rowId,'aktiv');
+}
+function setStatus(rowId, val){
+  var stat=document.getElementById('stat-'+rowId); if(!stat) return;
+  stat.value=val; stat.dataset.v=val;
+}
+function pad(n){ return String(n).padStart(2,'0'); }
+function updateBar(inp, rowId){ var val=Math.min(Math.max(parseFloat(inp.value)||0,0),300); var bar=document.getElementById('bar-fp-'+rowId); if(bar) bar.style.width=(val/300*100).toFixed(1)+'%'; }
+function checkAlarm(inp, rowId){
+  var val=parseFloat(inp.value);
+  var stat=document.getElementById('stat-'+rowId);
+  if(!stat||isNaN(val)) return;
+  if(val<=55){ setStatus(rowId,'rueck-alarm'); }
+  else if(val<=60){ setStatus(rowId,'rueck'); }
+  else if(val<=120){ setStatus(rowId,'alarm2'); }
+  else if(val<=180){ setStatus(rowId,'alarm1'); }
+  else { if(stat.value==='alarm1'||stat.value==='alarm2'){ setStatus(rowId,'aktiv'); } }
+}
+function updateStatus(sel){ sel.dataset.v=sel.value; }
+
+// ═══════════════════════════════════════════
+//  THEME / PRINT
+// ═══════════════════════════════════════════
+var dark=true;
+function toggleTheme(){
+  dark=!dark;
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  var lbl=document.getElementById('theme-label'); if(lbl) lbl.textContent=dark?'Hell':'Dunkel';
+  var icon=document.getElementById('theme-icon');
+  if(icon) icon.innerHTML=dark
+    ?'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>'
+    :'<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+}
+function doPrint(){
+  document.body.classList.add('printing');
+  var enrEl=document.getElementById('enr'); var datumEl=document.getElementById('einsatz_datum');
+  var enrVal=(enrEl&&enrEl.value.trim())?enrEl.value.trim():'oNr';
+  var datum=(datumEl&&datumEl.value)?datumEl.value:new Date().toISOString().split('T')[0];
+  var p=datum.split('-');
+  document.title='Atemschutzüberwachung '+(p.length===3?p[2]+'.'+p[1]+'.'+p[0]:datum)+' '+enrVal;
+  setTimeout(function(){
+    window.print();
+    window.addEventListener('afterprint',function h(){ window.removeEventListener('afterprint',h); document.body.classList.remove('printing'); });
+  },200);
+}
+
+// ═══════════════════════════════════════════
+//  POSTMESSAGE (parent toolbar integration)
+// ═══════════════════════════════════════════
+window.addEventListener('message', function(e) {
+  var d = e.data;
+  if (!d || d.target !== 'atemschutz') return;
+  if (d.fn === 'toggleTheme') toggleTheme();
+  if (d.fn === 'doPrint')    doPrint();
+});
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+var sonstigeHeaderAdded = false;
+
+(function(){
+  document.getElementById('einsatz_datum').value = new Date().toISOString().split('T')[0];
+  // Pre-build timers
+  addTimer('Trupp 1 — Angriff');
+  addTimer('Trupp 2 — Sicherung');
+  // Pre-build table rows — Trupp 1: 2 rows, Trupp 2: 2 rows
+  addRow('Trupp 1');
+  addRow('Trupp 1');
+  addGroupHeader('TRUPP 2 — Sicherungstrupp');
+  addRow('Trupp 2');
+  addRow('Trupp 2');
+})();
+</script>
+</body>
+</html>

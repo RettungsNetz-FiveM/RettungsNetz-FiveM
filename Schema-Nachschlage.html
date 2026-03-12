@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schema-Nachschlagewerk</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+[data-theme="light"]{--bg:#ECEAE6;--card:#FFFFFF;--card2:#F5F3F0;--g1:#111111;--g2:#333333;--g3:#666666;--g4:#999999;--g5:#CCCCCC;--bd:1px solid #DEDAD4;--step-bg:#F5F3F0;--nav-bg:#1A1A2E;}
+[data-theme="dark"] {--bg:#111111;--card:#1A1A1A;--card2:#222222;--g1:#EFEFEF;--g2:#CCCCCC;--g3:#888888;--g4:#555555;--g5:#333333;--bd:1px solid #2A2A2A;--step-bg:#181818;--nav-bg:#0A0A12;}
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--rot:#C0392B;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--g1);min-height:100vh;transition:background .2s,color .2s;}
+
+/* NAV */
+.nav{background:var(--nav-bg);border-bottom:2px solid #1e2535;position:sticky;top:0;z-index:100;display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none;}
+.nav::-webkit-scrollbar{display:none;}
+.nav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:11px 20px;border:none;background:transparent;border-right:1px solid #1e2535;border-bottom:3px solid transparent;cursor:pointer;min-width:90px;transition:all .15s;flex-shrink:0;}
+.nav-btn:hover{background:rgba(255,255,255,.04);}
+.nav-btn.active{border-bottom-color:var(--ac);background:rgba(255,255,255,.05);}
+.nav-key{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:700;color:#3d4f6a;line-height:1;transition:color .15s;}
+.nav-sub{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:#2d3a4a;line-height:1;transition:color .15s;}
+.nav-btn.active .nav-key{color:var(--ac);}
+.nav-btn.active .nav-sub{color:#8fa0b8;}
+
+/* PANELS */
+.wrap{padding:18px;max-width:none;margin:0;min-height:calc(100vh - 60px);display:flex;flex-direction:column;}
+.panel{display:none;animation:fi .18s ease;flex:1;display:none;flex-direction:column;}
+.panel.active{display:flex;}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* PANEL HEADER */
+.ph{display:flex;align-items:center;gap:16px;margin-bottom:14px;padding-bottom:14px;border-bottom:var(--bd);}
+.ph-key{font-family:'IBM Plex Mono',monospace;font-size:56px;font-weight:700;line-height:1;opacity:.1;letter-spacing:-2px;flex-shrink:0;}
+.ph-title{font-size:22px;font-weight:700;line-height:1.1;letter-spacing:-.2px;}
+.ph-desc{font-size:12.5px;color:var(--g3);margin-top:5px;line-height:1.5;max-width:750px;}
+.ph-tags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:8.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:3px 8px;border-radius:2px;border:1px solid transparent;}
+
+/* STEP ROW — the main component */
+.rows{display:flex;flex-direction:column;gap:3px;flex:1;}
+.sr{display:flex;align-items:stretch;background:var(--card);border:var(--bd);border-left:3px solid var(--ac);cursor:pointer;transition:background .12s;}
+.sr:hover{background:var(--card2);}
+.sr-let{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;width:64px;min-width:64px;display:flex;align-items:center;justify-content:center;color:var(--ac);border-right:var(--bd);background:color-mix(in srgb,var(--ac) 7%,transparent);flex-shrink:0;}
+.sr-main{padding:12px 16px;flex:1;display:flex;gap:14px;align-items:center;}
+.sr-kw{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--g3);min-width:160px;flex-shrink:0;}
+.sr-kw span{display:block;font-size:14px;font-weight:700;color:var(--g1);margin-top:3px;letter-spacing:0;}
+.sr-action{font-size:13px;color:var(--g3);flex:1;line-height:1.4;}
+.sr-arr{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--g4);padding:0 16px;flex-shrink:0;transition:transform .18s;align-self:center;}
+.sr.open .sr-arr{transform:rotate(90deg);color:var(--ac);}
+.sr-detail{display:none;padding:12px 16px 14px 80px;border-top:var(--bd);font-size:12.5px;color:var(--g2);line-height:1.7;background:var(--step-bg);}
+.sr.open .sr-detail{display:block;}
+.sr-detail strong{color:var(--g1);font-weight:700;}
+.sr-detail em{color:var(--g3);font-style:italic;}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;}
+.chip{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.4px;padding:3px 9px;border-radius:2px;border:1px solid color-mix(in srgb,var(--ac) 30%,transparent);color:var(--ac);background:color-mix(in srgb,var(--ac) 7%,transparent);}
+.note{margin-top:10px;padding:8px 12px;background:color-mix(in srgb,var(--ac) 6%,transparent);border-left:3px solid color-mix(in srgb,var(--ac) 35%,transparent);font-size:12px;color:var(--g3);font-style:italic;}
+
+/* GCS TABLE */
+.gcs-wrap{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;}
+.gcs-col{background:var(--card);border:var(--bd);}
+.gcs-head{padding:10px 14px;border-bottom:var(--bd);background:color-mix(in srgb,var(--ac) 8%,transparent);}
+.gcs-head-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);}
+.gcs-head-sub{font-size:9.5px;color:var(--g3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.gcs-row{display:flex;align-items:center;gap:0;border-bottom:var(--bd);}
+.gcs-row:last-child{border-bottom:none;}
+.gcs-pts{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:700;color:var(--ac);width:44px;min-width:44px;text-align:center;padding:10px 0;border-right:var(--bd);flex-shrink:0;}
+.gcs-desc{font-size:12px;color:var(--g2);padding:9px 12px;line-height:1.3;}
+.gcs-footer{margin-top:12px;display:flex;gap:10px;align-items:center;}
+.gcs-score-box{background:var(--card);border:var(--bd);border-left:3px solid var(--ac);padding:10px 16px;display:flex;align-items:center;gap:12px;flex:1;}
+.gsb-label{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--g3);}
+.gsb-val{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;color:var(--ac);}
+.gsb-desc{font-size:12px;color:var(--g3);}
+
+/* 4H-HITS two-col */
+.hits-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+.hits-col{display:flex;flex-direction:column;gap:3px;}
+.hits-head{padding:10px 14px 8px;background:var(--card);border:var(--bd);border-top:3px solid var(--ac);}
+.hits-head-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);}
+
+/* AVPU/WASB side-by-side cards */
+.avpu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;flex:1;align-items:stretch;}
+.avpu-card{background:var(--card);border:var(--bd);border-top:3px solid var(--ac);padding:18px;}
+.avpu-let{font-family:'IBM Plex Mono',monospace;font-size:44px;font-weight:700;color:var(--ac);line-height:1;opacity:.25;}
+.avpu-pair{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--g3);margin-top:3px;font-family:'IBM Plex Mono',monospace;}
+.avpu-word{font-size:16px;font-weight:700;color:var(--g1);margin-top:8px;}
+.avpu-desc{font-size:12.5px;color:var(--g3);margin-top:6px;line-height:1.5;}
+.avpu-gcs{margin-top:10px;display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--g3);}
+.avpu-gcs strong{color:var(--ac);font-size:14px;}
+.avpu-action{margin-top:10px;padding:7px 10px;background:color-mix(in srgb,var(--ac) 8%,transparent);border-left:2px solid var(--ac);font-size:12px;color:var(--g2);font-weight:600;}
+
+/* SBAR / BEFAST big-cards */
+.bigcard-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;}
+.bigcard{background:var(--card);border:var(--bd);border-left:4px solid var(--ac);padding:20px 22px;}
+.bc-let{font-family:'IBM Plex Mono',monospace;font-size:46px;font-weight:700;color:var(--ac);line-height:1;opacity:.18;}
+.bc-word{font-size:18px;font-weight:700;color:var(--g1);}
+.bc-kw{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--g3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.bc-desc{font-size:13px;color:var(--g2);margin-top:10px;line-height:1.5;}
+.bc-q{font-size:12px;color:var(--g4);font-style:italic;margin-top:10px;padding:8px 11px;background:var(--step-bg);border-left:3px solid color-mix(in srgb,var(--ac) 30%,transparent);}
+
+/* SSSS special layout */
+.ssss-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+</style>
+</head>
+<body>
+
+<div class="nav" id="nav">
+  <button class="nav-btn active" style="--ac:#C0392B" onclick="show('ssss',this)"><div class="nav-key">SSSS</div><div class="nav-sub">Lagefeststellung</div></button>
+  <button class="nav-btn" style="--ac:#B8470B" onclick="show('xabcde',this)"><div class="nav-key">xABCDE</div><div class="nav-sub">Trauma</div></button>
+  <button class="nav-btn" style="--ac:#1A6B9A" onclick="show('sampler',this)"><div class="nav-key">SAMPLER</div><div class="nav-sub">Anamnese</div></button>
+  <button class="nav-btn" style="--ac:#1A7A5E" onclick="show('opqrst',this)"><div class="nav-key">OPQRST</div><div class="nav-sub">Schmerz</div></button>
+  <button class="nav-btn" style="--ac:#7B3FA0" onclick="show('befast',this)"><div class="nav-key">(BE)FAST</div><div class="nav-sub">Schlaganfall</div></button>
+  <button class="nav-btn" style="--ac:#1A6B9A" onclick="show('gcs',this)"><div class="nav-key">GCS</div><div class="nav-sub">Bewusstsein</div></button>
+  <button class="nav-btn" style="--ac:#9A6B1A" onclick="show('hits',this)"><div class="nav-key">4H &amp; HITS</div><div class="nav-sub">Reanimation</div></button>
+  <button class="nav-btn" style="--ac:#B8470B" onclick="show('avpu',this)"><div class="nav-key">AVPU</div><div class="nav-sub">Wachheit</div></button>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════ SSSS ═══════════════ -->
+<div class="panel active" id="panel-ssss" style="--ac:#C0392B">
+  <div class="ph">
+    <div class="ph-key" style="color:#C0392B">SSSS</div>
+    <div>
+      <div class="ph-title">SSSS-Schema — Lagefeststellung bei Eintreffen</div>
+      <div class="ph-desc">Unmittelbar nach Eintreffen an der Einsatzstelle: Lage beurteilen, Gefahren erkennen, Ressourcen abschätzen — bevor der Patient angefasst wird.</div>
+      <div class="ph-tags">
+        <span class="tag" style="background:rgba(192,57,43,.12);color:#C0392B;border-color:rgba(192,57,43,.3);">ERSTMASSNAHME</span>
+        <span class="tag" style="background:rgba(192,57,43,.08);color:#C0392B;border-color:rgba(192,57,43,.2);">EIGENSICHERUNG</span>
+      </div>
+    </div>
+  </div>
+  <div class="rows">
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">S</div>
+      <div class="sr-main">
+        <div class="sr-kw">Scene<span>Einsatzstelle</span></div>
+        <div class="sr-action">Einsatzstelle beurteilen — Überblick verschaffen, Anzahl der Patienten feststellen</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Wie viele Patienten gibt es? · Wo genau befinden sie sich? · Art des Ereignisses einschätzen (Unfall, Erkrankung, Gewalt) · Erste orientierende Beobachtung aus sicherer Distanz
+        <div class="note">💡 Erst den Überblick gewinnen — dann annähern.</div>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">S</div>
+      <div class="sr-main">
+        <div class="sr-kw">Safety<span>Sicherheit</span></div>
+        <div class="sr-action">Gefährdung für Helfer, Patienten und Umstehende abschätzen — Eigensicherung hat oberste Priorität</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Eigengefährdung:</strong> Verkehr, Strom, Gas, Feuer, aggressive Personen, Einsturz, Infektionsgefahr<br>
+        <strong>Fremdgefährdung:</strong> Patienten, Angehörige, Schaulustige schützen<br>
+        <strong>Schutzausrüstung:</strong> Handschuhe, ggf. Atemschutz, Schutzweste<br>
+        <div class="note">⚠️ Kein Helfer darf sich selbst in Lebensgefahr bringen!</div>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">S</div>
+      <div class="sr-main">
+        <div class="sr-kw">Situation<span>Lage</span></div>
+        <div class="sr-action">Verletzungsmechanismus / Krankheitsbild bestimmen — Was ist passiert?</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Trauma:</strong> Unfallhergang, Kinetik, Aufprallenergie, Sturzhöhe, Einschränkung im Fahrzeug<br>
+        <strong>Internistisch:</strong> Hinweise auf Erkrankung, Medikamentenschachteln, Notfallausweis<br>
+        <strong>Erster Eindruck:</strong> Bewusstsein? Atmung? Schwere Blutung sichtbar?
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">S</div>
+      <div class="sr-main">
+        <div class="sr-kw">Support<span>Nachforderung</span></div>
+        <div class="sr-action">Bedarf an weiteren Kräften prüfen — Notarzt, FW, Polizei, Einsatzleitung nachfordern</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Nachfordern wenn:</strong> Mehrere Patienten (MANV) · Technische Rettung erforderlich · Atemstillstand / Reanimation · Schwere Traumata · Unklare Gefahrenlage<br>
+        <strong>Früh nachfordern:</strong> Lieber einmal zu viel anfordern — Kräfte können abbestellt werden, aber nicht rückwirkend geschickt
+        <div class="chips"><span class="chip">NEF</span><span class="chip">RTH</span><span class="chip">Feuerwehr</span><span class="chip">Polizei</span><span class="chip">MANV-Konzept</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ xABCDE ═══════════════ -->
+<div class="panel" id="panel-xabcde" style="--ac:#B8470B">
+  <div class="ph">
+    <div class="ph-key" style="color:#B8470B">xABCDE</div>
+    <div>
+      <div class="ph-title">xABCDE-Schema — Erweitertes Trauma-Assessment</div>
+      <div class="ph-desc">Systematisches Erstassessment bei Traumapatienten. Das <strong>x</strong> steht für Exsanguination (Ausbluten) — kritische Blutungen werden <em>vor</em> allem anderen gestoppt. Prinzip: <em>Treat first what kills first.</em></div>
+      <div class="ph-tags">
+        <span class="tag" style="background:rgba(184,71,11,.12);color:#B8470B;border-color:rgba(184,71,11,.3);">TRAUMA</span>
+        <span class="tag" style="background:rgba(184,71,11,.08);color:#B8470B;border-color:rgba(184,71,11,.2);">TREAT AS YOU GO</span>
+        <span class="tag" style="background:rgba(184,71,11,.08);color:#B8470B;border-color:rgba(184,71,11,.2);">PREHOSPITAL</span>
+      </div>
+    </div>
+  </div>
+  <div class="rows">
+
+    <!-- x — Dunkelrot / Karmesin -->
+    <div class="sr" style="--ac:#C0392B;border-left-color:#C0392B" onclick="this.classList.toggle('open')">
+      <div class="sr-let" style="color:#C0392B;background:rgba(192,57,43,.1)">x</div>
+      <div class="sr-main">
+        <div class="sr-kw" style="color:#C0392B">Exsanguination<span style="color:var(--g1)">Kritische Blutung</span></div>
+        <div class="sr-action">Lebensbedrohliche externe Blutung sofort stoppen — vor allem anderen!</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Maßnahmen:</strong> Direkter Druck · Tourniquet (TQ) bei Extremitätenblutungen · Wundpacker / hämosta­tischer Verband (QuikClot, Celox) bei Stamm/Leiste/Achsel · Beckengurt bei Beckentrauma<br><br>
+        <em>Zeit des TQ-Anlegens notieren!</em>
+        <div class="chips" style="--ac:#C0392B"><span class="chip">Tourniquet</span><span class="chip">Wundpacker</span><span class="chip">Beckengurt</span><span class="chip">TQ-Zeit notieren!</span></div>
+      </div>
+    </div>
+
+    <!-- A — Blau (Atemweg) -->
+    <div class="sr" style="--ac:#1565C0;border-left-color:#1565C0" onclick="this.classList.toggle('open')">
+      <div class="sr-let" style="color:#1565C0;background:rgba(21,101,192,.1)">A</div>
+      <div class="sr-main">
+        <div class="sr-kw" style="color:#1565C0">Airway<span style="color:var(--g1)">Atemweg</span></div>
+        <div class="sr-action">Atemweg freimachen und sichern — verlegt? Fremdkörper? Bewusstlos?</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Prüfen:</strong> Mundhöhle auf Fremdkörper, Blut, Erbrochenes · Stridor? Atemgeräusch hörbar?<br>
+        <strong>Maßnahmen:</strong> Esmarch-Handgriff · Absaugung · Guedel-/Wendl-Tubus · RSI-Intubation · Koniotomie (ultima ratio)<br>
+        <strong>Cave:</strong> HWS-Schutz bei Traumaverdacht — Stifneck erst nach Atemwegs-Sicherung
+        <div class="chips" style="--ac:#1565C0"><span class="chip">Guedel</span><span class="chip">Wendl</span><span class="chip">RSI</span><span class="chip">HWS-Schutz</span></div>
+      </div>
+    </div>
+
+    <!-- B — Blau (Atmung) -->
+    <div class="sr" style="--ac:#1565C0;border-left-color:#1565C0" onclick="this.classList.toggle('open')">
+      <div class="sr-let" style="color:#1565C0;background:rgba(21,101,192,.1)">B</div>
+      <div class="sr-main">
+        <div class="sr-kw" style="color:#1565C0">Breathing<span style="color:var(--g1)">Atmung</span></div>
+        <div class="sr-action">Atmung beurteilen — AF, SpO₂, Thoraxbewegung, Auskultation beidseits</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Normalwerte:</strong> AF 12–20/min · SpO₂ ≥94%<br>
+        <strong>Maßnahmen:</strong> O₂ hochdosiert (15 L/min, NRM) · BVM-Beatmung · Entlastungspunktion bei Spannungspneu · 3-Seiten-Verband bei offenem Pneumothorax
+        <div class="chips" style="--ac:#1565C0"><span class="chip">SpO₂ &gt;94%</span><span class="chip">NRM 15 L</span><span class="chip">Spannungspneu ausschließen</span></div>
+      </div>
+    </div>
+
+    <!-- C — Rot (Kreislauf) -->
+    <div class="sr" style="--ac:#C0392B;border-left-color:#C0392B" onclick="this.classList.toggle('open')">
+      <div class="sr-let" style="color:#C0392B;background:rgba(192,57,43,.1)">C</div>
+      <div class="sr-main">
+        <div class="sr-kw" style="color:#C0392B">Circulation<span style="color:var(--g1)">Kreislauf</span></div>
+        <div class="sr-action">Schock erkennen — Puls, RR, CRT, Hautfarbe, Schockzeichen?</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Schockzeichen:</strong> Tachykardie · Hypotonie · CRT &gt;2s · blasse/kühle Haut<br>
+        <strong>Maßnahmen:</strong> 2× großlumiger IV-Zugang (oder IO) · Permissive Hypotension (Ziel RR syst. 80–90 mmHg; SHT ≥90) · Kristalloide 250 ml-Boli · TXA 1 g · Wärmeerhalt
+        <div class="chips" style="--ac:#C0392B"><span class="chip">TXA 1 g</span><span class="chip">Permissive Hypotension</span><span class="chip">IO bei schlechtem Zugang</span></div>
+        <div class="note" style="border-left-color:#C0392B;background:rgba(192,57,43,.07)">⚠️ Bei SHT: RR syst. ≥90 mmHg halten!</div>
+      </div>
+    </div>
+
+    <!-- D — Gelb/Amber (Neurologie) -->
+    <div class="sr" style="--ac:#B7860B;border-left-color:#B7860B" onclick="this.classList.toggle('open')">
+      <div class="sr-let" style="color:#C9960E;background:rgba(183,134,11,.12)">D</div>
+      <div class="sr-main">
+        <div class="sr-kw" style="color:#B7860B">Disability<span style="color:var(--g1)">Neurologie</span></div>
+        <div class="sr-action">Bewusstsein, GCS, Pupillen, grobe Motorik, Blutzucker</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Tools:</strong> GCS (3–15) · AVPU · Pupillen (Weite, Seitengleichheit, Lichtreaktion) · grobe Motorik<br>
+        <strong>BZ-Messung:</strong> Pflicht bei unklarer Bewusstseinsstörung<br>
+        <strong>SHT-Ziele:</strong> RR syst. ≥90 · SpO₂ ≥95% · normales CO₂
+        <div class="chips" style="--ac:#B7860B"><span class="chip">GCS</span><span class="chip">AVPU</span><span class="chip">Pupillen</span><span class="chip">BZ-Messung!</span></div>
+      </div>
+    </div>
+
+    <!-- E — Grün (Entkleiden) -->
+    <div class="sr" style="--ac:#1A7A5E;border-left-color:#1A7A5E" onclick="this.classList.toggle('open')">
+      <div class="sr-let" style="color:#1A7A5E;background:rgba(26,122,94,.1)">E</div>
+      <div class="sr-main">
+        <div class="sr-kw" style="color:#1A7A5E">Exposure<span style="color:var(--g1)">Entkleiden</span></div>
+        <div class="sr-action">Vollständig entkleiden, alle Verletzungen suchen, Hypothermie verhindern</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Vorgehen:</strong> Trauma-Schere nutzen · Log-Roll für Rückeninspektion · alle Wunden, Hämatome, Deformitäten dokumentieren<br>
+        <strong>Wärmeerhalt:</strong> Rettungsdecke sofort — Hypothermie verstärkt Koagulopathie
+        <div class="chips" style="--ac:#1A7A5E"><span class="chip">Rettungsdecke</span><span class="chip">Log-Roll</span><span class="chip">Trauma-Schere</span></div>
+        <div class="note" style="border-left-color:#1A7A5E;background:rgba(26,122,94,.07)">⚠️ Lethal Triad: Hypothermie + Azidose + Koagulopathie vermeiden!</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ SAMPLER ═══════════════ -->
+<div class="panel" id="panel-sampler" style="--ac:#1A6B9A">
+  <div class="ph">
+    <div class="ph-key" style="color:#1A6B9A">SAMPLER</div>
+    <div>
+      <div class="ph-title">SAMPLER-Schema — Strukturierte Anamnese</div>
+      <div class="ph-desc">Vollständige Patientenanamnese im Notfalleinsatz — besonders wichtig vor Medikamentengabe oder RSI-Narkose. Das zusätzliche <strong>+S</strong> steht für Soziale Faktoren.</div>
+      <div class="ph-tags">
+        <span class="tag" style="background:rgba(26,107,154,.12);color:#1A6B9A;border-color:rgba(26,107,154,.3);">ANAMNESE</span>
+        <span class="tag" style="background:rgba(26,107,154,.08);color:#1A6B9A;border-color:rgba(26,107,154,.2);">VOR MEDIKAMENTENGABE</span>
+      </div>
+    </div>
+  </div>
+  <div class="rows">
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">S</div>
+      <div class="sr-main">
+        <div class="sr-kw">Symptoms<span>Symptome</span></div>
+        <div class="sr-action">Hauptbeschwerde — was klagt der Patient an? Schmerz, Schwäche, Übelkeit …</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Subjektiv:</strong> Beschwerde in den Worten des Patienten<br>
+        <strong>Objektiv:</strong> SpO₂, RR, Puls, Temp., BZ<br>
+        <em>„Wo tut es weh? Seit wann? Was ist der Hauptgrund für den Notruf?"</em>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">A</div>
+      <div class="sr-main">
+        <div class="sr-kw">Allergien<span>Allergien</span></div>
+        <div class="sr-action">Bekannte Allergien — insbesondere auf Medikamente? Allergiepass vorhanden?</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Medikamentenallergien · Nahrungsmittelallergien · Jod/Kontrastmittel · Kontaktallergien<br>
+        Reaktionstyp dokumentieren: Anaphylaxie, Exanthem, Unverträglichkeit
+        <div class="chips"><span class="chip">NKBA = Keine bekannten Allergien</span><span class="chip">Allergiepass?</span></div>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">M</div>
+      <div class="sr-main">
+        <div class="sr-kw">Medikamente<span>Dauermedikation</span></div>
+        <div class="sr-action">Welche Medikamente nimmt der Patient? Dosis, Zeitpunkt der letzten Einnahme?</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Name · Dosis · Einnahmefrequenz · Letzte Einnahme<br>
+        <strong>Besonders beachten:</strong> Antikoagulanzien (Marcumar, NOAC) · Antidiabetika · Herzmedikamente · Steroide · Antihypertensiva
+        <div class="chips"><span class="chip">⚠️ Antikoagulanzien!</span><span class="chip">Medikamentenplan?</span></div>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">P</div>
+      <div class="sr-main">
+        <div class="sr-kw">Patientengeschichte<span>Vorerkrankungen</span></div>
+        <div class="sr-action">Vorerkrankungen, Operationen, frühere Krankenhausaufenthalte</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Chronische Erkrankungen: Herz, Lunge, Diabetes, Niere, Leber<br>
+        Frühere OPs · Krankenhausaufenthalte · Schwangerschaft<br>
+        Impfstatus (Tetanus bei Wunden) · Letzte Mahlzeit für Aspirationsrisiko wichtig
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">L</div>
+      <div class="sr-main">
+        <div class="sr-kw">Letzte Mahlzeit<span>Letzte Nahrungsaufnahme</span></div>
+        <div class="sr-action">Wann zuletzt gegessen/getrunken? — Aspirationsrisiko bei Narkose!</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Zeitpunkt · Was · Menge<br>
+        <strong>Relevanz:</strong> Aspirationsrisiko bei RSI · BZ-Interpretation · Dehydratation einschätzen
+        <div class="chips"><span class="chip">6h feste Nahrung</span><span class="chip">2h klare Flüssigkeit</span></div>
+        <div class="note">Im Notfall: Aspiration immer möglich — kein Zeitverlust!</div>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">E</div>
+      <div class="sr-main">
+        <div class="sr-kw">Ereignisse<span>Hergang</span></div>
+        <div class="sr-action">Was ist passiert? Wie? Erinnerungsvermögen, Unfallhergang</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Was ist passiert, wie ist es passiert? · Womit hat es begonnen? · Auslöser?<br>
+        <strong>Trauma:</strong> Kinetik — Sturzhöhe, Aufprallgeschwindigkeit, Airbag, Gurt ausgelöst?<br>
+        <em>„Was haben Sie gemacht, als es angefangen hat?"</em>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">R</div>
+      <div class="sr-main">
+        <div class="sr-kw">Risikofaktoren<span>Risikofaktoren</span></div>
+        <div class="sr-action">Nikotin, Alkohol, Drogen, familiäre Vorbelastung, Schwangerschaft</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Kardiovaskulär: Rauchen · Übergewicht · Diabetes · Hypertonie · Hyperlipidämie · Familienanamnese<br>
+        Weitere: Alkohol/Drogen · Immobilisation (TVT) · Beruf · Reisen · Schwangerschaft
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">+S</div>
+      <div class="sr-main">
+        <div class="sr-kw">Soziale Faktoren<span>Soziales Umfeld</span></div>
+        <div class="sr-action">Wohnsituation, familiäre Belastungen, Hilfsbedarf zuhause</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Lebt allein oder mit Familie? · Soziale Isolation? · Pflegebedarf organisiert? · Häusliche Gewalt möglich? · Psychiatrische Vorgeschichte?<br>
+        <em>Relevanz für Nachsorge und Übergabe an Krankenhaus</em>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ OPQRST ═══════════════ -->
+<div class="panel" id="panel-opqrst" style="--ac:#1A7A5E">
+  <div class="ph">
+    <div class="ph-key" style="color:#1A7A5E">OPQRST</div>
+    <div>
+      <div class="ph-title">OPQRST-Schema — Schmerzanamnese</div>
+      <div class="ph-desc">Strukturierte Schmerzerfassung als Ergänzung zu SAMPLER — insbesondere wenn Schmerz das Leitsymptom ist. Hilft bei der Differentialdiagnose und Verlaufsbeurteilung.</div>
+      <div class="ph-tags">
+        <span class="tag" style="background:rgba(26,122,94,.12);color:#1A7A5E;border-color:rgba(26,122,94,.3);">SCHMERZANAMNESE</span>
+        <span class="tag" style="background:rgba(26,122,94,.08);color:#1A7A5E;border-color:rgba(26,122,94,.2);">ERGÄNZT SAMPLER</span>
+      </div>
+    </div>
+  </div>
+  <div class="rows">
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">O</div>
+      <div class="sr-main">
+        <div class="sr-kw">Onset<span>Schmerzbeginn</span></div>
+        <div class="sr-action">Wann begann der Schmerz? Plötzlich oder schleichend? Was haben Sie gerade gemacht?</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Plötzlich (Sekunden) → z.B. Aortenaneurysma, Lungenembolie, Herzinfarkt<br>
+        Schleichend (Stunden/Tage) → z.B. Entzündung, Muskelschmerz<br>
+        <em>„Wann genau hat der Schmerz angefangen? Was haben Sie in dem Moment gemacht?"</em>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">P</div>
+      <div class="sr-main">
+        <div class="sr-kw">Provocation / Palliation<span>Verstärker / Linderung</span></div>
+        <div class="sr-action">Was macht den Schmerz schlimmer oder besser?</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Verstärkt durch:</strong> Bewegung, Belastung, Einatmen (Pleuritis!), Essen, Druck<br>
+        <strong>Gelindert durch:</strong> Ruhe, bestimmte Position, Nitro (Angina!), Wärme, Analgetika
+        <div class="note">Nitro wirkt → V.a. Angina pectoris / ACS</div>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">Q</div>
+      <div class="sr-main">
+        <div class="sr-kw">Quality<span>Schmerzcharakter</span></div>
+        <div class="sr-action">Wie fühlt sich der Schmerz an? Drückend, stechend, brennend, kolikartig …</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Druck / Enge → ACS, Angina<br>
+        Stechend / scharf → Pleuritis, Pneumothorax, Perikarditis<br>
+        Brennend → Reflux, Ulkus<br>
+        Kolikartig (kommt und geht) → Nierenstein, Gallenkolik, Ileus<br>
+        Vernichtend / reißend → Aortendissektion!
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">R</div>
+      <div class="sr-main">
+        <div class="sr-kw">Region / Radiation<span>Lokalisation / Ausstrahlung</span></div>
+        <div class="sr-action">Wo ist der Schmerz? Strahlt er irgendwohin aus?</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>Typische Ausstrahlungsmuster:</strong><br>
+        Linker Arm / Kiefer → ACS · Rücken zwischen Schulterblätter → Aorta · Linke Schulter → Milz/Zwerchfell · Rechte Schulter → Gallenblase · Leiste → Nierenstein
+        <div class="note">Ausstrahlung ist wichtiger Differentialdiagnostik-Hinweis!</div>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">S</div>
+      <div class="sr-main">
+        <div class="sr-kw">Severity<span>Schmerzintensität NRS</span></div>
+        <div class="sr-action">Wie stark auf einer Skala von 0–10? (0 = kein Schmerz · 10 = stärkster vorstellbar)</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        <strong>NRS 0:</strong> Kein Schmerz · <strong>NRS 1–3:</strong> Mild · <strong>NRS 4–6:</strong> Mittel · <strong>NRS 7–9:</strong> Stark · <strong>NRS 10:</strong> Unerträglich<br>
+        Für Verlaufsbeurteilung und Therapiekontrolle nach Analgesie erneut erheben!
+        <em>„Auf einer Skala von 0 bis 10, wie stark ist der Schmerz jetzt?"</em>
+      </div>
+    </div>
+
+    <div class="sr" onclick="this.classList.toggle('open')">
+      <div class="sr-let">T</div>
+      <div class="sr-main">
+        <div class="sr-kw">Time<span>Zeitlicher Verlauf</span></div>
+        <div class="sr-action">Anhaltend oder intermittierend? Zunehmend, gleichbleibend oder nachlassend?</div>
+      </div>
+      <div class="sr-arr">▶</div>
+      <div class="sr-detail">
+        Konstant → oft entzündlich, organisch<br>
+        Kommt und geht (Kolik) → Hohlorganobstruktion<br>
+        Zunehmend → progrediente Erkrankung<br>
+        <em>„Ist der Schmerz die ganze Zeit da oder kommt und geht er? Wird er stärker oder schwächer?"</em>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ (BE)FAST ═══════════════ -->
+<div class="panel" id="panel-befast" style="--ac:#7B3FA0">
+  <div class="ph">
+    <div class="ph-key" style="color:#7B3FA0">BEFAST</div>
+    <div>
+      <div class="ph-title">(BE)FAST-Schema — Schlaganfall erkennen</div>
+      <div class="ph-desc">Neurologische Untersuchung bei V.a. Schlaganfall (Apoplex). Das erweiterte <strong>BE</strong>FAST ergänzt Balance und Eyes — erfasst ~14% mehr Schlaganfälle als FAST allein. Bei positivem Befund: schnellstmöglich in Stroke Unit!</div>
+      <div class="ph-tags">
+        <span class="tag" style="background:rgba(123,63,160,.12);color:#7B3FA0;border-color:rgba(123,63,160,.3);">SCHLAGANFALL</span>
+        <span class="tag" style="background:rgba(123,63,160,.08);color:#7B3FA0;border-color:rgba(123,63,160,.2);">NEUROLOGIE</span>
+        <span class="tag" style="background:rgba(123,63,160,.08);color:#7B3FA0;border-color:rgba(123,63,160,.2);">TIME IS BRAIN</span>
+      </div>
+    </div>
+  </div>
+  <div class="bigcard-grid">
+
+    <div class="bigcard">
+      <div class="bc-let">B</div>
+      <div class="bc-word">Balance</div>
+      <div class="bc-kw">Gleichgewicht</div>
+      <div class="bc-desc">Liegt eine Gleichgewichtsstörung vor? Links-/Rechtsneigung beim Gehen oder Stehen?</div>
+      <div class="bc-q">„Können Sie gerade stehen? Haben Sie das Gefühl umzufallen?"</div>
+    </div>
+
+    <div class="bigcard">
+      <div class="bc-let">E</div>
+      <div class="bc-word">Eyes</div>
+      <div class="bc-kw">Sehstörung</div>
+      <div class="bc-desc">Liegt eine Sehstörung oder ein Sehverlust vor? Doppelbilder? Halbseitige Blindheit?</div>
+      <div class="bc-q">„Sehen Sie verschwommen, doppelt oder gar nicht auf einer Seite?"</div>
+    </div>
+
+    <div class="bigcard">
+      <div class="bc-let">F</div>
+      <div class="bc-word">Face</div>
+      <div class="bc-kw">Gesicht</div>
+      <div class="bc-desc">Kann der Patient lächeln? Hängt ein Mundwinkel herunter? Zunge gerade rausstrecken? Stirn runzeln?</div>
+      <div class="bc-q">„Zeigen Sie mir Ihre Zähne — können Sie lächeln?"</div>
+    </div>
+
+    <div class="bigcard">
+      <div class="bc-let">A</div>
+      <div class="bc-word">Arms</div>
+      <div class="bc-kw">Arme / Beine</div>
+      <div class="bc-desc">Kann der Patient beide Arme auf gleiche Höhe heben und 10 Sekunden halten? Sinkt ein Arm ab? Gleiches für Beine im Liegen.</div>
+      <div class="bc-q">„Heben Sie beide Arme hoch und halten Sie sie — 10 Sekunden."</div>
+    </div>
+
+    <div class="bigcard">
+      <div class="bc-let">S</div>
+      <div class="bc-word">Speech</div>
+      <div class="bc-kw">Sprache</div>
+      <div class="bc-desc">Kann der Patient einen einfachen Satz nachsprechen? Ist die Sprache verwaschen, langsam oder unverständlich?</div>
+      <div class="bc-q">„Bitte sagen Sie nach: Der Himmel ist blau und das Gras ist grün."</div>
+    </div>
+
+    <div class="bigcard" style="border-left-color:#C0392B;--ac:#C0392B">
+      <div class="bc-let" style="color:#C0392B">T</div>
+      <div class="bc-word">Time</div>
+      <div class="bc-kw">Zeit — sofort handeln!</div>
+      <div class="bc-desc">Seit wann bestehen die Symptome? Symptombeginn dokumentieren. Bei positivem BEFAST-Befund: <strong>sofort in geeignete Stroke-Unit!</strong> Thrombolyse nur bis 4,5h möglich.</div>
+      <div class="bc-q" style="border-left-color:#C0392B;background:rgba(192,57,43,.07)">„Wann genau haben Sie / hat jemand die ersten Symptome bemerkt?" — Uhrzeit notieren!</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ GCS ═══════════════ -->
+<div class="panel" id="panel-gcs" style="--ac:#1A6B9A">
+  <div class="ph">
+    <div class="ph-key" style="color:#1A6B9A">GCS</div>
+    <div>
+      <div class="ph-title">Glasgow Coma Scale — Bewusstseinsskala</div>
+      <div class="ph-desc">Standardisierte Skala zur Abschätzung einer Bewusstseinsstörung. Drei Bereiche werden separat bewertet — die Summe ergibt den GCS-Wert (3–15).</div>
+      <div class="ph-tags">
+        <span class="tag" style="background:rgba(26,107,154,.12);color:#1A6B9A;border-color:rgba(26,107,154,.3);">NEUROLOGIE</span>
+        <span class="tag" style="background:rgba(26,107,154,.08);color:#1A6B9A;border-color:rgba(26,107,154,.2);">SHT · KOMA · MONITORING</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="gcs-wrap">
+
+    <div class="gcs-col">
+      <div class="gcs-head">
+        <div class="gcs-head-title">Augen öffnen (E)</div>
+        <div class="gcs-head-sub">Eyes — max. 4 Punkte</div>
+      </div>
+      <div class="gcs-row"><div class="gcs-pts">4</div><div class="gcs-desc">Spontan — öffnet die Augen ohne Aufforderung</div></div>
+      <div class="gcs-row"><div class="gcs-pts">3</div><div class="gcs-desc">Auf Aufforderung — öffnet auf Ansprache</div></div>
+      <div class="gcs-row"><div class="gcs-pts">2</div><div class="gcs-desc">Auf Schmerzreiz — öffnet nur bei Schmerz</div></div>
+      <div class="gcs-row"><div class="gcs-pts">1</div><div class="gcs-desc">Keine Reaktion</div></div>
+    </div>
+
+    <div class="gcs-col">
+      <div class="gcs-head">
+        <div class="gcs-head-title">Verbale Reaktion (V)</div>
+        <div class="gcs-head-sub">Verbal — max. 5 Punkte</div>
+      </div>
+      <div class="gcs-row"><div class="gcs-pts">5</div><div class="gcs-desc">Orientiert — konversationsfähig, weiß wo/wann/wer</div></div>
+      <div class="gcs-row"><div class="gcs-pts">4</div><div class="gcs-desc">Verwirrt — konversationsfähig, aber desorientiert</div></div>
+      <div class="gcs-row"><div class="gcs-pts">3</div><div class="gcs-desc">Unpassend — einzelne Wörter, kein Gespräch</div></div>
+      <div class="gcs-row"><div class="gcs-pts">2</div><div class="gcs-desc">Unverständlich — nur Laute, Stöhnen</div></div>
+      <div class="gcs-row"><div class="gcs-pts">1</div><div class="gcs-desc">Keine verbale Reaktion</div></div>
+    </div>
+
+    <div class="gcs-col">
+      <div class="gcs-head">
+        <div class="gcs-head-title">Motorische Reaktion (M)</div>
+        <div class="gcs-head-sub">Motor — max. 6 Punkte</div>
+      </div>
+      <div class="gcs-row"><div class="gcs-pts">6</div><div class="gcs-desc">Befolgt Aufforderungen — gezielt und korrekt</div></div>
+      <div class="gcs-row"><div class="gcs-pts">5</div><div class="gcs-desc">Gezielte Schmerzabwehr — wischt Schmerzreiz weg</div></div>
+      <div class="gcs-row"><div class="gcs-pts">4</div><div class="gcs-desc">Ungezielte Schmerzabwehr — zieht sich zurück</div></div>
+      <div class="gcs-row"><div class="gcs-pts">3</div><div class="gcs-desc">Beugesynergismen (Dekortikation)</div></div>
+      <div class="gcs-row"><div class="gcs-pts">2</div><div class="gcs-desc">Strecksynergismen (Dezerebration)</div></div>
+      <div class="gcs-row"><div class="gcs-pts">1</div><div class="gcs-desc">Keine motorische Reaktion</div></div>
+    </div>
+
+  </div>
+
+  <div class="gcs-footer" style="margin-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;">
+    <div class="gcs-score-box" style="border-left-color:#1A7A5E">
+      <div><div class="gsb-label">Normal</div><div class="gsb-val" style="color:#1A7A5E">15</div><div class="gsb-desc">Wach, orientiert, voll reaktionsfähig</div></div>
+    </div>
+    <div class="gcs-score-box" style="border-left-color:#9A6B1A">
+      <div><div class="gsb-label">Leichtes SHT</div><div class="gsb-val" style="color:#9A6B1A">13–15</div><div class="gsb-desc">Leichte Bewusstseinseinschränkung</div></div>
+    </div>
+    <div class="gcs-score-box" style="border-left-color:#B8470B">
+      <div><div class="gsb-label">Mittelschweres SHT</div><div class="gsb-val" style="color:#B8470B">9–12</div><div class="gsb-desc">Atemwegssicherung erwägen</div></div>
+    </div>
+    <div class="gcs-score-box" style="border-left-color:#C0392B">
+      <div><div class="gsb-label">Schweres SHT / Koma</div><div class="gsb-val" style="color:#C0392B">≤8</div><div class="gsb-desc">Intubation — Atemweg sichern!</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ 4H & HITS ═══════════════ -->
+<div class="panel" id="panel-hits" style="--ac:#9A6B1A">
+  <div class="ph">
+    <div class="ph-key" style="color:#9A6B1A">4H·HITS</div>
+    <div>
+      <div class="ph-title">4H &amp; HITS — Reversible Ursachen beim Herzkreislaufstillstand</div>
+      <div class="ph-desc">Merkregel für behebbare Ursachen eines Herzkreislaufstillstands im Rahmen des Advanced Life Support (ALS). Jede Ursache sollte während der laufenden Reanimation gesucht und — wenn möglich — sofort behandelt werden.</div>
+      <div class="ph-tags">
+        <span class="tag" style="background:rgba(154,107,26,.12);color:#9A6B1A;border-color:rgba(154,107,26,.3);">REANIMATION</span>
+        <span class="tag" style="background:rgba(154,107,26,.08);color:#9A6B1A;border-color:rgba(154,107,26,.2);">ALS</span>
+        <span class="tag" style="background:rgba(154,107,26,.08);color:#9A6B1A;border-color:rgba(154,107,26,.2);">REVERSIBLE URSACHEN</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hits-grid">
+
+    <div class="hits-col">
+      <div class="hits-head"><div class="hits-head-title">4H — Metabolisch / Physiologisch</div></div>
+      <div class="rows" style="gap:2px;">
+
+        <div class="sr" onclick="this.classList.toggle('open')">
+          <div class="sr-let">H</div>
+          <div class="sr-main">
+            <div class="sr-kw">Hypoxie<span>Sauerstoffmangel</span></div>
+            <div class="sr-action">O₂-Mangel als Reanimationsursache — Atemweg frei? Beatmung suffizient?</div>
+          </div>
+          <div class="sr-arr">▶</div>
+          <div class="sr-detail">
+            <strong>Ursachen:</strong> Verlegter Atemweg · Apnoe · Aspiration · Pneumothorax · schwere Pneumonie<br>
+            <strong>Maßnahme:</strong> Atemweg sichern (Intubation) · Beatmung mit 100% O₂ · Spannungspneu ausschließen
+            <div class="chips"><span class="chip">Intubation</span><span class="chip">100% O₂</span><span class="chip">Thorakostomie bei Spannungspneu</span></div>
+          </div>
+        </div>
+
+        <div class="sr" onclick="this.classList.toggle('open')">
+          <div class="sr-let">H</div>
+          <div class="sr-main">
+            <div class="sr-kw">Hypovolämie<span>Volumenmangel</span></div>
+            <div class="sr-action">Schwerer Blutverlust oder Flüssigkeitsmangel als Ursache</div>
+          </div>
+          <div class="sr-arr">▶</div>
+          <div class="sr-detail">
+            <strong>Ursachen:</strong> Massenblutung (intern/extern) · Sepsis · Anaphylaxie · starke Dehydratation<br>
+            <strong>Maßnahme:</strong> Blutungskontrolle · aggressiver IV-Zugang · Volumenersatz · ggf. Vasopressoren
+            <div class="chips"><span class="chip">Blutung stoppen</span><span class="chip">Volumen 500–1000 ml</span></div>
+          </div>
+        </div>
+
+        <div class="sr" onclick="this.classList.toggle('open')">
+          <div class="sr-let">H</div>
+          <div class="sr-main">
+            <div class="sr-kw">Hypothermie<span>Unterkühlung</span></div>
+            <div class="sr-action">Körperkerntemperatur &lt;30°C kann Herzstillstand verursachen</div>
+          </div>
+          <div class="sr-arr">▶</div>
+          <div class="sr-detail">
+            <strong>Merksatz:</strong> „Niemand ist tot, bevor er warm und tot ist."<br>
+            <strong>Maßnahme:</strong> Aktives Wiedererwärmen (innen und außen) · Reanimation fortführen bis KKT &gt;35°C · ggf. ECMO
+            <div class="chips"><span class="chip">Temp. messen</span><span class="chip">Aktive Erwärmung</span><span class="chip">ECMO-Zentrum</span></div>
+          </div>
+        </div>
+
+        <div class="sr" onclick="this.classList.toggle('open')">
+          <div class="sr-let">H</div>
+          <div class="sr-main">
+            <div class="sr-kw">Hypo-/Hyperkaliämie<span>Elektrolytstörung</span></div>
+            <div class="sr-action">Elektrolytentgleisung und andere Stoffwechselstörungen (Azidose, Hypo-/Hyperglykämie)</div>
+          </div>
+          <div class="sr-arr">▶</div>
+          <div class="sr-detail">
+            <strong>Hypokaliämie:</strong> VF, ventrikuläre Arrhythmien → Kaliumgabe<br>
+            <strong>Hyperkaliämie:</strong> Asystolie, Bradykardie → Kalzium, Bikarbonat, Insulin/Glukose<br>
+            <strong>Azidose:</strong> Bikarbonat erwägen · BZ-Messung bei unklarem Stillstand
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="hits-col">
+      <div class="hits-head" style="--ac:#C0392B;border-top-color:#C0392B"><div class="hits-head-title" style="color:#C0392B">HITS — Mechanisch / Toxisch</div></div>
+      <div class="rows" style="gap:2px;--ac:#C0392B">
+
+        <div class="sr" style="border-left-color:#C0392B" onclick="this.classList.toggle('open')">
+          <div class="sr-let" style="color:#C0392B;background:rgba(192,57,43,.07)">H</div>
+          <div class="sr-main">
+            <div class="sr-kw">Herzbeuteltamponade<span>Tamponade</span></div>
+            <div class="sr-action">Blut im Perikard komprimiert das Herz — pulslose elektrische Aktivität (PEA)</div>
+          </div>
+          <div class="sr-arr">▶</div>
+          <div class="sr-detail">
+            <strong>Zeichen:</strong> Gestaute Halsvenen · gedämpfte Herztöne · Hypotonie (Beck-Trias) · PEA<br>
+            <strong>Maßnahme:</strong> Perikardpunktion (Perikardiozentese) · ggf. chirurgische Entlastung
+            <div class="chips"><span class="chip">Perikardiozentese</span><span class="chip">Echokardiographie</span></div>
+          </div>
+        </div>
+
+        <div class="sr" style="border-left-color:#C0392B" onclick="this.classList.toggle('open')">
+          <div class="sr-let" style="color:#C0392B;background:rgba(192,57,43,.07)">I</div>
+          <div class="sr-main">
+            <div class="sr-kw">Intoxikation<span>Vergiftung</span></div>
+            <div class="sr-action">Medikamente, Drogen oder Gifte als Reanimationsursache</div>
+          </div>
+          <div class="sr-arr">▶</div>
+          <div class="sr-detail">
+            <strong>Häufig:</strong> Trizyklische Antidepressiva · Betablocker · Digitalis · Opioide · Kokain · CO-Vergiftung<br>
+            <strong>Maßnahme:</strong> Spezifische Antidota (Naloxon bei Opioid, Atropin bei Cholinergika) · verlängerte Reanimation!
+            <div class="chips"><span class="chip">Naloxon (Opioide)</span><span class="chip">Atropin (Cholinerg)</span><span class="chip">Lipid-Rescue</span></div>
+          </div>
+        </div>
+
+        <div class="sr" style="border-left-color:#C0392B" onclick="this.classList.toggle('open')">
+          <div class="sr-let" style="color:#C0392B;background:rgba(192,57,43,.07)">T</div>
+          <div class="sr-main">
+            <div class="sr-kw">Thromboembolie<span>Lungenembolie / Herzinfarkt</span></div>
+            <div class="sr-action">Massive Lungenembolie oder akuter Myokardinfarkt als Reanimationsursache</div>
+          </div>
+          <div class="sr-arr">▶</div>
+          <div class="sr-detail">
+            <strong>Lungenembolie:</strong> PEA · Gestaute Halsvenen · keine Besserung auf Reanimation<br>
+            <strong>Maßnahme:</strong> Lysetherapie (rt-PA) unter laufender CPR · ggf. mechanische Thrombektomie (Interventionell)<br>
+            <strong>STEMI:</strong> Bei ROSC → sofortige Koronarangiographie
+            <div class="chips"><span class="chip">Lyse unter CPR</span><span class="chip">rt-PA 50 mg</span><span class="chip">Post-ROSC Cath-Lab</span></div>
+          </div>
+        </div>
+
+        <div class="sr" style="border-left-color:#C0392B" onclick="this.classList.toggle('open')">
+          <div class="sr-let" style="color:#C0392B;background:rgba(192,57,43,.07)">S</div>
+          <div class="sr-main">
+            <div class="sr-kw">Spannungspneumothorax<span>Tension Pneumothorax</span></div>
+            <div class="sr-action">Luft im Pleuraspalt komprimiert Herz und Venen — PEA, plötzliche Verschlechterung</div>
+          </div>
+          <div class="sr-arr">▶</div>
+          <div class="sr-detail">
+            <strong>Zeichen:</strong> Gestaute Halsvenen · einseitig fehlendes Atemgeräusch · Trachealdeviation (spät) · PEA<br>
+            <strong>Maßnahme:</strong> Sofortige Nadeldekompression (2. ICR, MCL) · dann Thorakostomie / Thoraxdrainage
+            <div class="chips"><span class="chip">Nadeldekompression</span><span class="chip">2. ICR MCL</span><span class="chip">Thoraxdrainage</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ AVPU / WASB ═══════════════ -->
+<div class="panel" id="panel-avpu">
+  <div class="ph">
+    <div class="ph-key" style="color:#B8470B">AVPU</div>
+    <div>
+      <div class="ph-title">AVPU-Schema / WASB-Schema — Schnelle Wachheitsprüfung</div>
+      <div class="ph-desc">Schnelles Screening des Bewusstseinszustands bei der ersten Annäherung an den Patienten — <em>bevor</em> der GCS erhoben wird. Deutsch: <strong>WASB</strong> (Wach · Ansprache · Schmerzreiz · Bewusstlos).</div>
+      <div class="ph-tags">
+        <span class="tag" style="background:rgba(184,71,11,.12);color:#B8470B;border-color:rgba(184,71,11,.3);">NEUROLOGIE</span>
+        <span class="tag" style="background:rgba(184,71,11,.08);color:#B8470B;border-color:rgba(184,71,11,.2);">SCREENING · VOR GCS</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="avpu-grid">
+
+    <div class="avpu-card" style="--ac:#1A7A5E;border-top-color:#1A7A5E">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div class="avpu-let" style="color:#1A7A5E">A</div>
+        <div style="text-align:right;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:#3a4a5a;text-transform:uppercase;letter-spacing:1px;">WASB</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:#1A7A5E">W</div>
+        </div>
+      </div>
+      <div class="avpu-pair">Alert / Wach</div>
+      <div class="avpu-word">Wach &amp; orientiert</div>
+      <div class="avpu-desc">Patient ist wach, öffnet die Augen spontan, reagiert orientiert auf Ansprache (Ort, Zeit, Person).</div>
+      <div class="avpu-gcs">GCS <strong>15</strong></div>
+      <div class="avpu-action" style="border-left-color:#1A7A5E;background:rgba(26,122,94,.08);">✓ Vollständige Anamnese möglich</div>
+    </div>
+
+    <div class="avpu-card" style="--ac:#9A6B1A;border-top-color:#9A6B1A">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div class="avpu-let" style="color:#9A6B1A">V</div>
+        <div style="text-align:right;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:#3a4a5a;text-transform:uppercase;letter-spacing:1px;">WASB</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:#9A6B1A">A</div>
+        </div>
+      </div>
+      <div class="avpu-pair">Voice / Ansprache</div>
+      <div class="avpu-word">Reaktion auf Ansprache</div>
+      <div class="avpu-desc">Reagiert auf laute Ansprache oder Namensnennung — öffnet die Augen, bewegt sich oder antwortet, ist aber nicht spontan wach.</div>
+      <div class="avpu-gcs">GCS <strong>9–13</strong></div>
+      <div class="avpu-action" style="border-left-color:#9A6B1A;background:rgba(154,107,26,.08);">→ Laut ansprechen · Reaktion beobachten</div>
+    </div>
+
+    <div class="avpu-card" style="--ac:#B8470B;border-top-color:#B8470B">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div class="avpu-let" style="color:#B8470B">P</div>
+        <div style="text-align:right;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:#3a4a5a;text-transform:uppercase;letter-spacing:1px;">WASB</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:#B8470B">S</div>
+        </div>
+      </div>
+      <div class="avpu-pair">Pain / Schmerzreiz</div>
+      <div class="avpu-word">Reaktion nur auf Schmerz</div>
+      <div class="avpu-desc">Reagiert ausschließlich auf Schmerzreize (Nagelbettdruck, Sternumreiben). Keine Reaktion auf Ansprache.</div>
+      <div class="avpu-gcs">GCS <strong>5–8</strong></div>
+      <div class="avpu-action" style="border-left-color:#B8470B;background:rgba(184,71,11,.08);">⚠ Atemweg sichern erwägen · GCS erheben</div>
+    </div>
+
+    <div class="avpu-card" style="--ac:#C0392B;border-top-color:#C0392B">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div class="avpu-let" style="color:#C0392B">U</div>
+        <div style="text-align:right;">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:#3a4a5a;text-transform:uppercase;letter-spacing:1px;">WASB</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;color:#C0392B">B</div>
+        </div>
+      </div>
+      <div class="avpu-pair">Unresponsive / Bewusstlos</div>
+      <div class="avpu-word">Keine Reaktion</div>
+      <div class="avpu-desc">Keinerlei Reaktion auf Ansprache oder Schmerzreize. Atemweg und Atmung sofort prüfen — Reanimationsbedarf?</div>
+      <div class="avpu-gcs">GCS <strong>≤4</strong></div>
+      <div class="avpu-action" style="border-left-color:#C0392B;background:rgba(192,57,43,.1);">🚨 Reanimation prüfen — SOFORT handeln!</div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+function show(id,btn){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
