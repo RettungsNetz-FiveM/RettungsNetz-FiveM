@@ -223,6 +223,7 @@ header {
 .module-card[data-accent="red"] { --card-accent: var(--red); }
 .module-card[data-accent="blu"] { --card-accent: var(--blu); }
 .module-card[data-accent="orange"] { --card-accent: var(--amb); }
+.module-card[data-accent="purple"] { --card-accent: var(--pur); }
 .mc-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
 .mc-icon-wrap { width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--sf3); border: 1px solid var(--bd); font-size: 20px; }
 .mc-meta { flex: 1; }
@@ -513,6 +514,34 @@ header {
     <!-- ── SCHEMA toolbar ── -->
     <div class="toolbar-panel" id="tb-schema"></div>
 
+    <!-- ── PERSONALPLAN toolbar ── -->
+    <div class="toolbar-panel" id="tb-personalplan">
+
+      <div class="tb-sep"></div>
+      <button class="hbtn" onclick="ppSend('doExport')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+      <div class="tb-sep"></div>
+      <button class="hbtn" onclick="ppImportClick()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Import
+      </button>
+      <input type="file" id="pp-import-file-idx" accept=".json" style="display:none" onchange="ppImportFile(this)">
+      <div class="tb-sep"></div>
+      <button class="hbtn" id="btn-pp-theme" onclick="ppToggleTheme()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13" id="pp-theme-icon">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+        <span id="pp-theme-label">Hell</span>
+      </button>
+      <div class="tb-sep"></div>
+      <button class="hbtn pri" onclick="ppPrint()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Drucken
+      </button>
+    </div>
+
   </div><!-- /h-toolbar -->
 </header>
 
@@ -565,6 +594,13 @@ header {
         <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/></svg>
       </span>
       <span class="nav-label">Schema</span>
+    </button>
+
+    <button class="nav-btn" id="nav-personalplan" onclick="openTool('personalplan')" title="Schicht- & Personalplan">
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="13" y2="18"/></svg>
+      </span>
+      <span class="nav-label">Schicht&shy;plan</span>
     </button>
 
     <div class="sidebar-divider"></div>
@@ -635,11 +671,11 @@ header {
               <button class="mc-open-btn">Öffnen →</button>
             </div>
           </div>
-          <div class="module-card" data-accent="blu" onclick="openTool('fahrzeug')">
+          <div class="module-card" data-accent="purple" onclick="openTool('fahrzeug')">
             <div class="mc-header">
               <div class="mc-icon-wrap">🚑</div>
               <div class="mc-meta">
-                <div class="mc-tag">Modul 04 · Sonstige</div>
+                <div class="mc-tag">Modul 04 · Planung</div>
                 <div class="mc-title">Fahrzeug-Planer</div>
               </div>
             </div>
@@ -649,11 +685,25 @@ header {
               <button class="mc-open-btn">Öffnen →</button>
             </div>
           </div>
+          <div class="module-card" data-accent="purple" onclick="openTool('personalplan')">
+            <div class="mc-header">
+              <div class="mc-icon-wrap">📅</div>
+              <div class="mc-meta">
+                <div class="mc-tag">Modul 05 · Planung</div>
+                <div class="mc-title">Schicht- & Personalplan</div>
+              </div>
+            </div>
+            <div class="mc-desc">Personalplanung für Feuerwehr und Rettungsdienst. Monatsübersicht, Dienste &amp; Schichten, Personalstamm — mit Import/Export.</div>
+            <div class="mc-footer">
+              <span class="mc-status">Bereit</span>
+              <button class="mc-open-btn">Öffnen →</button>
+            </div>
+          </div>
           <div class="module-card" data-accent="blu" onclick="openTool('schema')">
             <div class="mc-header">
               <div class="mc-icon-wrap">📖</div>
               <div class="mc-meta">
-                <div class="mc-tag">Modul 05 · Sonstige</div>
+                <div class="mc-tag">Modul 06 · Sonstige</div>
                 <div class="mc-title">Schema-Nachschlagewerk</div>
               </div>
             </div>
@@ -666,7 +716,7 @@ header {
         </div>
       </div>
       <div class="sysinfo-grid">
-        <div class="sysinfo-cell"><span class="sysinfo-label">Verfügbare Module</span><span class="sysinfo-val">5</span><span class="sysinfo-note">Praxisnah · Direkt · Leicht</span></div>
+        <div class="sysinfo-cell"><span class="sysinfo-label">Verfügbare Module</span><span class="sysinfo-val">6</span><span class="sysinfo-note">Praxisnah · Direkt · Leicht</span></div>
         <div class="sysinfo-cell"><span class="sysinfo-label">Version</span><span class="sysinfo-val">1.0</span><span class="sysinfo-note">Build 2026.03</span></div>
         <div class="sysinfo-cell"><span class="sysinfo-label">Letztes Update</span><span class="sysinfo-val" id="last-update-date">12.03.2026</span><span class="sysinfo-note" id="last-update-note">Patch · UI · Bugfixes</span></div>
       </div>
@@ -695,6 +745,11 @@ header {
     <!-- ── SCHEMA NACHSCHLAGEWERK ── -->
     <div class="tool-view" id="view-schema">
       <iframe class="tool-frame" id="frame-schema" src="" title="Schema-Nachschlagewerk"></iframe>
+    </div>
+
+    <!-- ── SCHICHT- & PERSONALPLAN ── -->
+    <div class="tool-view" id="view-personalplan">
+      <iframe class="tool-frame" id="frame-personalplan" src="" title="Schicht- & Personalplan"></iframe>
     </div>
 
     <!-- ── INFO ── -->
@@ -732,7 +787,7 @@ header {
               </li>
               <li style="display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--txt2);line-height:1.5;">
                 <span style="color:var(--blu);font-size:16px;line-height:1.3;">▸</span>
-                <span>5 Module: Protokoll, MANV-Triage, Atemschutz, Fahrzeugplaner, Nachschlagewerk</span>
+                <span>6 Module: Protokoll, MANV-Triage, Atemschutz, Fahrzeugplaner, Nachschlagewerk, Schichtplan</span>
               </li>
             </ul>
           </div>
@@ -854,13 +909,14 @@ header {
 // VIEW / MODULE STATE
 // ════════════════════════════════
 const MODULE_META = {
-  dashboard:  { label: 'Aktives Modul',              name: 'Start · Übersicht'       },
-  protokol:   { label: 'Modul 01 · Dokumentation',  name: 'Einsatz-Protokoll'       },
-  fahrzeug:   { label: 'Modul 02 · Planung',         name: 'Fahrzeug-Planer'         },
-  manv:       { label: 'Modul 03 · MANV · Triage',   name: 'MANV Triage'             },
-  atemschutz: { label: 'Modul 04 · Atemschutz',      name: 'Atemschutzüberwachung'   },
-  schema:     { label: 'Modul 05 · Nachschlagewerk', name: 'Schema-Nachschlagewerk'  },
-  info:       { label: 'Aktives Modul',              name: 'Info · Hilfe'            },
+  dashboard:    { label: 'Aktives Modul',              name: 'Start · Übersicht'       },
+  protokol:     { label: 'Modul 01 · Dokumentation',  name: 'Einsatz-Protokoll'       },
+  fahrzeug:     { label: 'Modul 02 · Planung',         name: 'Fahrzeug-Planer'         },
+  manv:         { label: 'Modul 03 · MANV · Triage',   name: 'MANV Triage'             },
+  atemschutz:   { label: 'Modul 04 · Atemschutz',      name: 'Atemschutzüberwachung'   },
+  schema:       { label: 'Modul 05 · Nachschlagewerk', name: 'Schema-Nachschlagewerk'  },
+  personalplan: { label: 'Modul 06 · Personal',        name: 'Schicht- & Personalplan' },
+  info:         { label: 'Aktives Modul',              name: 'Info · Hilfe'            },
 };
 
 let currentView = 'dashboard';
@@ -890,7 +946,7 @@ const frameLoaded = {};
 function openTool(tool) {
   showView(tool);
   if (!frameLoaded[tool]) {
-    const src = { protokol: 'Einsatz-Protokol.html', fahrzeug: 'Fahrzeugplaner.html', manv: 'MANV-Triage.html', atemschutz: 'Atemschutzueberwachung.html', schema: 'Schema-Nachschlage.html' };
+    const src = { protokol: 'Einsatz-Protokol.html', fahrzeug: 'Fahrzeugplaner.html', manv: 'MANV-Triage.html', atemschutz: 'Atemschutzueberwachung.html', schema: 'Schema-Nachschlage.html', personalplan: 'Schicht-Personalplan.html' };
     const f = document.getElementById('frame-' + tool);
     if (f && src[tool]) { f.src = src[tool]; frameLoaded[tool] = true; }
   }
@@ -1132,6 +1188,32 @@ function manvUpdateModeUI(online, users) {
     bl.classList.remove('active');
   };
 })();
+
+// ── Personalplan ──
+let _ppDark = true;
+function ppSend(fn, arg) { sendToFrame('frame-personalplan', 'personalplan', fn, arg); }
+function ppPrint()        { ppSend('doPrint'); }
+function ppImportClick()  { document.getElementById('pp-import-file-idx').click(); }
+function ppToggleTheme() {
+  _ppDark = !_ppDark;
+  document.getElementById('pp-theme-label').textContent = _ppDark ? 'Hell' : 'Dunkel';
+  var ic = document.getElementById('pp-theme-icon');
+  ic.innerHTML = _ppDark
+    ? '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>'
+    : '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+  ppSend('toggleTheme');
+}
+function ppImportFile(input) {
+  const file = input.files[0]; if (!file) return;
+  // Forward the import trigger to the iframe
+  const f = document.getElementById('frame-personalplan');
+  if (f && f.contentWindow) {
+    const reader = new FileReader();
+    reader.onload = e => { f.contentWindow.postMessage({ target: 'personalplan', fn: 'importData', arg: e.target.result }, '*'); };
+    reader.readAsText(file);
+  }
+  input.value = '';
+}
 
 // GitHub letztes Update
 (async () => {

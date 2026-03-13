@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schicht- & Personalplan</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+[data-theme="light"]{--bg:#E8E3DC;--card:#FFF;--g1:#1A1A1A;--g2:#2D2D2D;--g4:#888;--g5:#B8B8B8;--g6:#E0E0E0;--bd:1px solid #D4CEC8;--inp-bg:#F4F3F1;--inp-foc:#FFF;--strip-bg:#1A1A1A;--strip-c:#888;--strip-v:#FFF;--head-bg:#F4F3F1;}
+[data-theme="dark"]{--bg:#141414;--card:#1E1E1E;--g1:#E8E8E8;--g2:#CCCCCC;--g4:#777;--g5:#555;--g6:#333;--bd:1px solid #383838;--inp-bg:#282828;--inp-foc:#2E2E2E;--strip-bg:#0A0A0A;--strip-c:#666;--strip-v:#E0E0E0;--head-bg:#252525;}
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--rot:#C0392B;--rot-d:#922B21;--blau:#1A6B9A;--blau-d:#155a84;--gruen:#27AE60;--orange:#E67E22;--lila:#7B3FA0;--gap:2px;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--g1);font-size:13px;min-height:100vh;transition:background .25s,color .25s;}
+.main{width:100%;padding:8px 8px 60px;display:flex;flex-direction:column;gap:var(--gap);}
+
+/* ID Strip */
+.id-strip{background:var(--strip-bg);display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+.id-field{display:flex;align-items:center;gap:6px;}
+.id-field span{color:var(--strip-c);white-space:nowrap;font-size:10px;}
+.id-field input,.id-field select{background:transparent;border:none;border-bottom:1px solid #444;color:var(--strip-v);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:1px 4px;outline:none;appearance:none;-webkit-appearance:none;}
+.id-field input:focus,.id-field select:focus{border-bottom-color:var(--rot);}
+.id-field input.wide{width:200px;}.id-field input.med{width:120px;}.id-field input.sm{width:75px;}.id-field select.med{width:130px;}
+
+/* Stats */
+.stats-row{display:flex;gap:var(--gap);flex-wrap:wrap;}
+.stat-card{background:var(--card);flex:1;min-width:100px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;border-top:3px solid transparent;}
+.stat-card.s-rot{border-top-color:var(--rot);}.stat-card.s-blau{border-top-color:var(--blau);}
+.stat-card.s-gruen{border-top-color:var(--gruen);}.stat-card.s-orange{border-top-color:var(--orange);}.stat-card.s-lila{border-top-color:var(--lila);}
+.stat-val{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;line-height:1;}
+.stat-lbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--g4);}
+
+/* Tabs */
+.section{background:var(--card);border-left:4px solid transparent;display:flex;flex-direction:column;transition:background .25s;}
+.tabs-bar{display:flex;gap:0;border-bottom:var(--bd);background:var(--head-bg);}
+.tab-btn{background:transparent;border:none;border-bottom:3px solid transparent;color:var(--g4);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:10px 20px;transition:color .15s,border-color .15s;margin-bottom:-1px;}
+.tab-btn:hover{color:var(--g2);}.tab-btn.active{color:var(--rot);border-bottom-color:var(--rot);}
+.tab-pane{display:none;}.tab-pane.active{display:flex;flex-direction:column;gap:var(--gap);}
+.s-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+
+/* Fields */
+.f{display:flex;flex-direction:column;gap:3px;}
+.f>label{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--g4);}
+.f input,.f select,.f textarea{width:100%;border:var(--bd);background:var(--inp-bg);padding:6px 8px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--g1);outline:none;transition:border-color .15s;border-radius:0;appearance:none;-webkit-appearance:none;}
+.f input:focus,.f select:focus{border-color:var(--rot);background:var(--inp-foc);}
+.f select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;}
+.c2{grid-column:span 2;}
+
+/* Schichtplan Grid */
+.schicht-grid-wrap{overflow-x:auto;width:100%;}
+.schicht-grid{width:100%;border-collapse:collapse;font-size:11px;}
+.schicht-grid th{background:var(--head-bg);font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--g4);padding:5px 3px;border:var(--bd);white-space:nowrap;text-align:center;min-width:40px;}
+.schicht-grid td{border:1px solid var(--g6);padding:0;vertical-align:middle;text-align:center;}
+.schicht-grid .name-cell{text-align:left;padding:5px 10px;white-space:nowrap;font-size:12px;background:var(--head-bg);min-width:160px;position:sticky;left:0;z-index:2;}
+.schicht-grid .grp-row td{background:var(--strip-bg);font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--g4);padding:4px 10px;text-align:left;}
+.schicht-cell{width:40px;min-height:28px;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;margin:0 auto;line-height:1.2;}
+.schicht-time{font-size:7px;font-weight:400;opacity:.8;white-space:nowrap;letter-spacing:0;}
+.schicht-legend{display:flex;gap:12px;flex-wrap:wrap;padding:4px 0;align-items:center;}
+.leg-item{display:flex;align-items:center;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:9px;}
+.leg-dot{width:24px;height:15px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:8px;}
+
+/* Personal Table */
+.tbl-wrap{overflow-x:auto;width:100%;}
+table.pers-tbl{width:100%;border-collapse:collapse;font-size:13px;}
+table.pers-tbl th{background:var(--head-bg);font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--g4);padding:7px 10px;border-bottom:var(--bd);white-space:nowrap;text-align:left;}
+table.pers-tbl td{border-bottom:1px solid var(--g6);padding:3px 4px;vertical-align:middle;}
+table.pers-tbl tr:hover td{background:rgba(255,255,255,.03);}
+table.pers-tbl input,table.pers-tbl select{border:var(--bd);background:var(--inp-bg);color:var(--g1);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:5px 7px;outline:none;width:100%;appearance:none;-webkit-appearance:none;transition:border-color .15s;}
+table.pers-tbl input:focus,table.pers-tbl select:focus{border-color:var(--rot);}
+table.pers-tbl select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4'%3E%3Cpath d='M0 0l4 4 4-4z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 5px center;padding-right:20px;cursor:pointer;}
+.btn-del-row{background:transparent;border:none;cursor:pointer;color:var(--g5);font-size:14px;padding:0 5px;line-height:1;transition:color .15s;}
+.btn-del-row:hover{color:var(--rot);}
+.btn-add-row{background:transparent;border:1px dashed var(--g5);color:var(--g4);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;cursor:pointer;transition:border-color .15s,color .15s;align-self:flex-start;}
+.btn-add-row:hover{border-color:var(--blau);color:var(--blau);}
+
+/* Dienst Cards */
+.dienst-cards{display:flex;flex-direction:column;gap:var(--gap);}
+.dienst-card{background:var(--card);border-left:4px solid var(--blau);}
+.dc-head{background:var(--head-bg);display:flex;align-items:center;gap:10px;padding:7px 13px;border-bottom:var(--bd);}
+.dc-title-inp{background:transparent;border:none;border-bottom:1px solid var(--g6);color:var(--g1);font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.08em;flex:1;max-width:280px;outline:none;padding:2px 4px;}
+.dc-title-inp:focus{border-bottom-color:var(--blau);}
+.dc-date{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--g4);}
+.dc-type-badge{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;white-space:nowrap;background:rgba(26,107,154,.15);color:#5aaddf;}
+.dc-body{padding:11px 13px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px 13px;}
+.dc-pers-section{padding:9px 13px;border-top:var(--bd);}
+.dc-pers-label{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--g4);margin-bottom:7px;}
+.dc-pers-grid{display:flex;flex-wrap:wrap;gap:6px;}
+
+/* Person Search in Dienst Modal */
+.pers-search-wrap{position:relative;}
+.pers-search-wrap input{width:100%;border:var(--bd);background:var(--inp-bg);color:var(--g1);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:7px 10px;outline:none;transition:border-color .15s;}
+.pers-search-wrap input:focus{border-color:var(--blau);}
+.pers-search-drop{position:absolute;top:100%;left:0;right:0;background:var(--card);border:var(--bd);border-top:none;z-index:50;max-height:180px;overflow-y:auto;display:none;}
+.pers-search-drop.open{display:block;}
+.pers-search-item{padding:8px 12px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;transition:background .1s;}
+.pers-search-item:hover{background:var(--inp-bg);}
+.pers-search-item .psi-org{font-size:10px;color:var(--g4);font-family:'IBM Plex Mono',monospace;}
+.pers-cb-item{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 9px;border:var(--bd);background:var(--inp-bg);white-space:nowrap;transition:border-color .15s,background .15s;user-select:none;}
+.pers-cb-item.checked{border-color:var(--blau);background:rgba(26,107,154,.15);}
+.pers-cb-item:hover{border-color:var(--blau);}
+.pers-cb-box{width:13px;height:13px;border:1px solid var(--g5);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:background .15s,border-color .15s;}
+.pers-cb-item.checked .pers-cb-box{background:var(--blau);border-color:var(--blau);color:#fff;}
+.dc-actions{padding:5px 13px;display:flex;gap:8px;border-top:var(--bd);}
+.dc-btn{background:transparent;border:var(--bd);color:var(--g4);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;transition:border-color .15s,color .15s;}
+.dc-btn:hover{border-color:var(--blau);color:var(--blau);}
+.dc-btn.danger:hover{border-color:var(--rot);color:var(--rot);}
+.btn-add-dienst{background:transparent;border:1px dashed var(--g5);color:var(--g4);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:7px 16px;cursor:pointer;transition:border-color .15s,color .15s;}
+.btn-add-dienst:hover{border-color:var(--blau);color:var(--blau);}
+
+/* Modals */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border:var(--bd);border-top:3px solid var(--rot);width:90%;max-width:560px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;}
+.modal-head{background:var(--head-bg);padding:11px 17px;display:flex;align-items:center;gap:10px;border-bottom:var(--bd);}
+.modal-title{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;flex:1;}
+.modal-close{background:transparent;border:none;cursor:pointer;color:var(--g5);font-size:18px;padding:0 4px;line-height:1;transition:color .15s;}
+.modal-close:hover{color:var(--rot);}
+.modal-body{padding:15px 17px;display:flex;flex-direction:column;gap:11px;}
+.modal-foot{padding:11px 17px;display:flex;gap:10px;justify-content:flex-end;border-top:var(--bd);}
+.btn-modal{background:var(--inp-bg);border:var(--bd);color:var(--g2);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 15px;transition:border-color .15s,color .15s,background .15s;}
+.btn-modal.primary{background:var(--rot);border-color:var(--rot);color:#fff;}
+.btn-modal.primary:hover{background:var(--rot-d);}
+.btn-modal:not(.primary):hover{border-color:var(--blau);color:var(--blau);}
+
+/* Custom list */
+.custom-list{display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto;margin-bottom:6px;}
+.custom-list-item{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--head-bg);border:var(--bd);font-size:13px;}
+.custom-list-item span.name{flex:1;}
+.custom-list-item .tag{font-size:10px;color:var(--g5);font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+.custom-list-item .del-btn{background:transparent;border:none;cursor:pointer;color:var(--g5);font-size:13px;padding:0 3px;transition:color .15s;}
+.custom-list-item .del-btn:hover{color:var(--rot);}
+.add-custom-row{display:flex;gap:6px;align-items:center;}
+.add-custom-row input{flex:1;border:var(--bd);background:var(--inp-bg);padding:7px 10px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--g1);outline:none;transition:border-color .15s;}
+.add-custom-row input:focus{border-color:var(--blau);}
+.add-custom-row input.narrow{flex:none;width:72px;}
+.add-custom-row button{background:var(--blau);border:none;color:#fff;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;padding:7px 13px;letter-spacing:.08em;text-transform:uppercase;transition:background .15s;white-space:nowrap;}
+.add-custom-row button:hover{background:var(--blau-d);}
+
+/* Emoji picker trigger */
+.emoji-btn{background:var(--inp-bg);border:var(--bd);cursor:pointer;font-size:18px;padding:5px 10px;line-height:1;transition:border-color .15s;flex-shrink:0;}
+.emoji-btn:hover{border-color:var(--blau);}
+.emoji-picker-wrap{position:relative;display:inline-flex;align-items:center;}
+
+/* Color picker row */
+.color-pick-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.color-swatch{width:20px;height:20px;cursor:pointer;border:2px solid transparent;transition:border-color .1s,transform .1s;}
+.color-swatch:hover,.color-swatch.sel{border-color:var(--g1);transform:scale(1.15);}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#eee;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:9px 20px;border-left:3px solid var(--gruen);z-index:2000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* ═══ PRINT ═══ */
+@media print{
+  @page{size:A4 landscape;margin:8mm;}
+  html,body{background:#fff!important;color:#000!important;font-size:9px!important;}
+  .modal-overlay,.toast{display:none!important;}
+  .main{padding:0!important;}
+  .id-strip{background:#f0f0f0!important;color:#000!important;padding:4px 8px!important;}
+  .id-strip *{color:#000!important;border-color:#aaa!important;}
+  .stats-row,.s-body>div:first-child,.tabs-bar,.schicht-legend{page-break-inside:avoid;}
+  .stat-card{padding:4px 8px!important;}
+  .stat-val{font-size:16px!important;}
+  .tab-pane{display:none!important;}/* hide inactive tabs */
+  .tab-pane.print-active{display:flex!important;}/* only active tab */
+  .tabs-bar{display:none!important;}
+  .section{border:none!important;page-break-inside:avoid;}
+  .schicht-grid th,.schicht-grid td{font-size:7px!important;padding:2px 1px!important;}
+  .schicht-cell{width:24px!important;min-height:16px!important;font-size:6px!important;}
+  .schicht-time{font-size:5px!important;}
+  .schicht-grid{table-layout:fixed!important;width:100%!important;}
+  .schicht-grid-wrap{overflow:visible!important;}
+  .schicht-grid th{min-width:0!important;padding:2px 1px!important;}
+  .schicht-grid .name-cell{min-width:80px!important;max-width:80px!important;font-size:7px!important;padding:2px 3px!important;}
+  table.pers-tbl th,table.pers-tbl td{font-size:8px!important;padding:3px 4px!important;}
+  table.pers-tbl input,table.pers-tbl select{font-size:8px!important;padding:2px 4px!important;border:none!important;background:transparent!important;}
+  .dc-body{grid-template-columns:1fr 1fr 1fr 1fr!important;font-size:8px!important;}
+  .dc-body input,.dc-body select{font-size:8px!important;padding:2px 4px!important;border:none!important;background:transparent!important;}
+  .dc-actions,.btn-add-row,.btn-add-dienst,.btn-del-row{display:none!important;}
+  .dc-pers-section{padding:4px 8px!important;}
+  .pers-cb-item{font-size:8px!important;padding:2px 5px!important;}
+  .dienst-card{margin-bottom:4px!important;}
+  .s-body{padding:5px 8px!important;gap:5px!important;}
+  /* Print section header for active tab */
+  .tab-pane.print-active::before{content:attr(data-label);display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#555;padding:4px 0 2px;border-bottom:1px solid #ccc;margin-bottom:4px;}
+}
+</style>
+</head>
+<body>
+<div class="main">
+  <!-- ID Strip -->
+  <div class="id-strip">
+    <div class="id-field"><span>ORGANISATION</span><input type="text" class="wide" id="org-name" placeholder="FW / RD Musterstadt" value="FW / RD Musterstadt"></div>
+    <div class="id-field"><span>ZEITRAUM</span><input type="date" class="med" id="plan-von"> — <input type="date" class="med" id="plan-bis"></div>
+    <div class="id-field"><span>PLAN-NR</span><input type="text" class="sm" id="plan-nr" placeholder="2025-01"></div>
+    <div class="id-field"><span>ERSTELLER</span><input type="text" class="med" id="plan-ersteller" placeholder="FüKr. Mustermann"></div>
+    <div class="id-field"><span>STATUS</span>
+      <select id="plan-status" style="border:var(--bd);background:var(--inp-bg);color:var(--g1);font-size:13px;padding:5px 26px 5px 8px;outline:none;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%279%27 height=%275%27%3E%3Cpath d=%27M0 0l4.5 5 4.5-5z%27 fill=%27%23888%27/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 7px center;width:130px;">
+        <option value="entwurf">Entwurf</option>
+        <option value="freigegeben" selected>Freigegeben</option>
+        <option value="archiv">Archiv</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card s-blau"><div class="stat-val" id="stat-gesamt">0</div><div class="stat-lbl">Personal gesamt</div></div>
+    <div class="stat-card s-gruen"><div class="stat-val" id="stat-dienste">0</div><div class="stat-lbl">Dienste gesamt</div></div>
+    <div class="stat-card s-orange"><div class="stat-val" id="stat-verplant-tage">0</div><div class="stat-lbl">Verplante Tage</div></div>
+    <div class="stat-card s-rot"><div class="stat-val" id="stat-verplant-pers">0</div><div class="stat-lbl">Verplante Mitarbeiter</div></div>
+    <div class="stat-card s-lila" style="min-width:180px;"><div class="stat-val" id="stat-top-org" style="font-size:14px;margin-top:2px;">—</div><div class="stat-lbl">Stärkste Organisation</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="section" style="border-left-color:var(--rot);">
+    <div class="tabs-bar">
+      <button class="tab-btn active" id="tabbtn-schichtplan" onclick="switchTab('tab-schichtplan',this)">Monatsübersicht</button>
+      <button class="tab-btn" id="tabbtn-dienste" onclick="switchTab('tab-dienste',this)">Dienste &amp; Schichten</button>
+      <button class="tab-btn" id="tabbtn-personal" onclick="switchTab('tab-personal',this)">Personalstamm</button>
+    </div>
+
+    <!-- TAB: SCHICHTPLAN -->
+    <div id="tab-schichtplan" class="tab-pane active" data-label="MONATSÜBERSICHT">
+      <div class="s-body">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <label style="font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--g4);white-space:nowrap;">Monat</label>
+            <select id="grid-monat" style="border:var(--bd);background:var(--inp-bg);color:var(--g1);font-size:13px;padding:5px 26px 5px 8px;outline:none;appearance:none;-webkit-appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%279%27 height=%275%27%3E%3Cpath d=%27M0 0l4.5 5 4.5-5z%27 fill=%27%23888%27/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 7px center;" onchange="renderGrid()">
+              <option>Januar</option><option>Februar</option><option>März</option><option>April</option><option>Mai</option><option>Juni</option><option>Juli</option><option>August</option><option>September</option><option>Oktober</option><option>November</option><option>Dezember</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <label style="font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--g4);white-space:nowrap;">Jahr</label>
+            <input type="number" id="grid-jahr" value="2025" min="2020" max="2035" style="border:var(--bd);background:var(--inp-bg);color:var(--g1);font-size:13px;padding:5px 8px;outline:none;width:78px;" onchange="renderGrid()">
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <label style="font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--g4);white-space:nowrap;">Person</label>
+            <div style="position:relative;">
+              <input type="text" id="grid-search" placeholder="Name suchen …" oninput="renderGrid()" style="border:var(--bd);background:var(--inp-bg);color:var(--g1);font-size:13px;padding:5px 28px 5px 8px;outline:none;width:160px;">
+              <button onclick="document.getElementById('grid-search').value='';renderGrid();" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--g4);cursor:pointer;font-size:12px;padding:0;line-height:1;" title="Löschen">✕</button>
+            </div>
+          </div>
+          <button class="btn-add-row" onclick="renderGrid()">↻ Aktualisieren</button>
+        </div>
+        <div class="schicht-legend" id="schicht-legend"></div>
+        <div class="schicht-grid-wrap">
+          <table class="schicht-grid">
+            <thead id="grid-head"></thead>
+            <tbody id="grid-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: DIENSTE -->
+    <div id="tab-dienste" class="tab-pane" data-label="DIENSTE & SCHICHTEN">
+      <div class="s-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-add-dienst" onclick="openModal('modal-dienst')">+ Dienst / Schicht hinzufügen</button>
+          <button class="btn-add-row" onclick="openModal('modal-custom-dienst-type')">⚙ Dienst-Typen verwalten</button>
+        </div>
+        <div class="dienst-cards" id="dienst-list"></div>
+      </div>
+    </div>
+
+    <!-- TAB: PERSONAL -->
+    <div id="tab-personal" class="tab-pane" data-label="PERSONALSTAMM">
+      <div class="s-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn-add-row" onclick="openModal('modal-personal')">+ Person hinzufügen</button>
+          <button class="btn-add-row" onclick="openModal('modal-custom-org')">⚙ Organisationen verwalten</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="pers-tbl">
+            <thead>
+              <tr>
+                <th style="min-width:120px;">Nachname</th>
+                <th style="min-width:110px;">Vorname</th>
+                <th style="min-width:140px;">Dienstgrad / Funktion</th>
+                <th style="min-width:140px;">Organisation</th>
+                <th style="min-width:180px;">Notiz</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="personal-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="pp-import-file" accept=".json" style="display:none" onchange="doImport(this)">
+
+<!-- MODAL: Neue Person -->
+<div class="modal-overlay" id="modal-personal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Person hinzufügen</div>
+      <button class="modal-close" onclick="closeModal('modal-personal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="g2">
+        <div class="f"><label>Nachname</label><input type="text" id="mp-nachname" placeholder="Mustermann"></div>
+        <div class="f"><label>Vorname</label><input type="text" id="mp-vorname" placeholder="Max"></div>
+        <div class="f"><label>Dienstgrad / Funktion</label><input type="text" id="mp-grad" placeholder="BM / Zugführer"></div>
+        <div class="f"><label>Organisation</label><select id="mp-org"></select></div>
+        <div class="f c2"><label>Notiz</label><input type="text" id="mp-notiz" placeholder="z.B. AGT-Träger …"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal" onclick="closeModal('modal-personal')">Abbrechen</button>
+      <button class="btn-modal primary" onclick="savePersonFromModal()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Neuer Dienst -->
+<div class="modal-overlay" id="modal-dienst">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Dienst / Schicht hinzufügen</div>
+      <button class="modal-close" onclick="closeModal('modal-dienst')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="g2">
+        <div class="f c2"><label>Bezeichnung</label><input type="text" id="md-name" placeholder="z.B. Nachtschicht FW, Sanitätsdienst Stadtfest …"></div>
+        <div class="f"><label>Typ</label>
+          <div style="display:flex;align-items:center;gap:0;position:relative;">
+            <div id="md-type-swatch" style="width:8px;height:100%;min-height:36px;flex-shrink:0;background:var(--g5);transition:background .15s;"></div>
+            <select id="md-type" style="flex:1;border-left:none !important;"></select>
+          </div>
+        </div>
+        <div class="f"><label>Datum von</label><input type="date" id="md-datum-von" onchange="mdSyncDatumBis()"></div>
+        <div class="f"><label>Datum bis</label><input type="date" id="md-datum-bis"></div>
+        <div class="f"><label>Uhrzeit von</label><input type="time" id="md-von" value="07:00"></div>
+        <div class="f"><label>Uhrzeit bis</label><input type="time" id="md-bis" value="19:00"></div>
+        <div class="f"><label>Ort / Fahrzeug</label><input type="text" id="md-ort" placeholder="FW-Haus / HLF-1 …"></div>
+        <div class="f"><label>Mindeststärke</label><input type="number" id="md-minst" placeholder="4" min="1"></div>
+        <div class="f c2"><label>Personal (Suche)</label>
+          <div class="pers-search-wrap">
+            <input type="text" id="md-pers-search" placeholder="Name eingeben …" autocomplete="off" oninput="persSearchInput()" onblur="setTimeout(()=>closePersSearch(),180)">
+            <div class="pers-search-drop" id="md-pers-drop"></div>
+          </div>
+        </div>
+        <div class="f c2"><label>Eingeplantes Personal</label>
+          <div id="md-selected-pers" style="display:flex;flex-wrap:wrap;gap:5px;min-height:28px;"></div>
+        </div>
+        <div class="f c2"><label>Bemerkung</label><input type="text" id="md-bemerkung" placeholder="Besonderheiten …"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal" onclick="closeModal('modal-dienst')">Abbrechen</button>
+      <button class="btn-modal primary" onclick="saveDienstFromModal()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: Organisationen -->
+<div class="modal-overlay" id="modal-custom-org">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Organisationen verwalten</div>
+      <button class="modal-close" onclick="closeModal('modal-custom-org')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--g4);font-family:'IBM Plex Mono',monospace;">Standard-Organisationen können nicht gelöscht werden.</div>
+      <div class="custom-list" id="org-list"></div>
+      <div class="add-custom-row">
+        <button class="emoji-btn" id="org-emoji-btn" onclick="toggleOrgEmojiPicker()" title="Emoji auswählen">➕</button>
+        <input type="text" id="new-org-label" placeholder="Name (z.B. THW)" onkeydown="if(event.key==='Enter')addCustomOrg()">
+        <input type="text" class="narrow" id="new-org-short" placeholder="Kürzel" onkeydown="if(event.key==='Enter')addCustomOrg()">
+        <button onclick="addCustomOrg()">+ Hinzufügen</button>
+      </div>
+      <!-- Emoji Grid -->
+      <div id="org-emoji-grid" style="display:none;margin-top:8px;padding:8px;background:var(--head-bg);border:var(--bd);">
+        <div style="font-size:9px;color:var(--g4);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Emoji auswählen</div>
+        <div id="org-emoji-list" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal primary" onclick="closeModal('modal-custom-org');refreshOrgSelects()">Fertig</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Dienst-Typen -->
+<div class="modal-overlay" id="modal-custom-dienst-type">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Dienst-Typen verwalten</div>
+      <button class="modal-close" onclick="closeModal('modal-custom-dienst-type')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--g4);font-family:'IBM Plex Mono',monospace;">Standard-Typen können nicht gelöscht werden.</div>
+      <div class="custom-list" id="dienst-type-list"></div>
+      <div style="border:var(--bd);padding:10px;background:var(--head-bg);display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--g4);">Neuer Typ</div>
+        <div class="add-custom-row">
+          <input type="text" id="new-dtype-label" placeholder="Bezeichnung …" onkeydown="if(event.key==='Enter')addCustomDienstType()" style="flex:2;">
+          <input type="text" class="narrow" id="new-dtype-code" placeholder="Code" style="width:60px;" maxlength="3">
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div style="font-size:9px;color:var(--g4);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;">Farbe wählen:</div>
+          <div class="color-pick-row" id="dtype-color-row"></div>
+          <div style="font-size:9px;color:var(--g4);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.08em;">Vorschau:</div>
+          <div id="dtype-preview" style="width:34px;height:20px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;background:rgba(72,149,239,.25);color:#90c5ff;">AB</div>
+        </div>
+        <button onclick="addCustomDienstType()" style="background:var(--blau);border:none;color:#fff;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;padding:7px;letter-spacing:.08em;text-transform:uppercase;align-self:flex-start;">+ Hinzufügen</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal primary" onclick="closeModal('modal-custom-dienst-type');refreshDienstTypeSelects()">Fertig</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════ SCHICHT TYPEN ════════
+var SCHICHT_TYPES=[
+  {id:'tagschicht',   code:'T', label:'Tagschicht',    bg:'rgba(26,107,154,.25)', fg:'#5aaddf',standard:true},
+  {id:'nachtschicht', code:'N', label:'Nachtschicht',  bg:'rgba(123,63,160,.25)',fg:'#c49ee6', standard:true},
+  {id:'ausbildung',   code:'A', label:'Ausbildung',    bg:'rgba(39,174,96,.2)',  fg:'#52c77a', standard:true},
+  {id:'sanitaet',     code:'S', label:'Sanitätsdienst',bg:'rgba(230,126,34,.25)',fg:'#f0a350',standard:true},
+  {id:'bereitschaft', code:'B', label:'Bereitschaft',  bg:'rgba(26,107,154,.12)',fg:'#4a90c0', standard:true},
+  {id:'urlaub',       code:'U', label:'Urlaub',        bg:'rgba(136,136,136,.12)',fg:'#888',  standard:true},
+  {id:'krank',        code:'K', label:'Krank',         bg:'rgba(192,57,43,.2)', fg:'#e87767', standard:true},
+  {id:'uebung',       code:'ÜB',label:'Übungsdienst',  bg:'rgba(39,174,96,.12)',fg:'#8de0ab', standard:true},
+];
+
+var DTYPE_COLORS=[
+  {bg:'rgba(72,149,239,.25)', fg:'#90c5ff'},
+  {bg:'rgba(26,107,154,.3)',  fg:'#5aaddf'},
+  {bg:'rgba(0,180,220,.22)',  fg:'#50d0f0'},
+  {bg:'rgba(0,200,180,.22)',  fg:'#4de0d0'},
+  {bg:'rgba(39,174,96,.25)',  fg:'#52c77a'},
+  {bg:'rgba(100,200,100,.2)', fg:'#90e090'},
+  {bg:'rgba(200,230,100,.2)', fg:'#c8e850'},
+  {bg:'rgba(255,220,0,.22)',  fg:'#ffe040'},
+  {bg:'rgba(255,180,0,.22)',  fg:'#ffd04a'},
+  {bg:'rgba(255,140,0,.25)',  fg:'#ffaa44'},
+  {bg:'rgba(230,126,34,.28)', fg:'#f0a350'},
+  {bg:'rgba(192,57,43,.22)',  fg:'#e87767'},
+  {bg:'rgba(255,100,100,.22)',fg:'#ff9090'},
+  {bg:'rgba(220,80,180,.22)', fg:'#f090cc'},
+  {bg:'rgba(180,100,255,.25)',fg:'#d0a0ff'},
+  {bg:'rgba(123,63,160,.28)', fg:'#c49ee6'},
+  {bg:'rgba(136,136,136,.18)',fg:'#aaaaaa'},
+  {bg:'rgba(60,60,60,.35)',   fg:'#cccccc'},
+];
+var _dtypeColorSel=0;
+
+// ════════ ORG LIST ════════
+var ORG_LIST=[
+  {id:'fw',      emoji:'🔴', label:'Feuerwehr',       short:'FW',  standard:true},
+  {id:'rd',      emoji:'🟡', label:'Rettungsdienst',  short:'RD',  standard:true},
+  {id:'hio',     emoji:'🟢', label:'Hilfsorganisation',short:'HiO',standard:true},
+  {id:'pol',     emoji:'🔵', label:'Polizei',         short:'Pol', standard:true},
+  {id:'khs',     emoji:'⚕️', label:'Krankenhaus',     short:'KHS', standard:true},
+  {id:'sonstige',emoji:'⚪', label:'Sonstiges',       short:'Son', standard:true},
+];
+var ORG_MAP={};
+function rebuildOrgMap(){ORG_MAP={};ORG_LIST.forEach(o=>{ORG_MAP[o.id]=o;});}
+rebuildOrgMap();
+function orgDisplayLabel(o){return (o.emoji||'')+(o.emoji?' ':'')+o.label;}
+
+// Emoji sets for org picker
+var ORG_EMOJIS=['🔴','🔵','🟢','🟡','🟠','🟣','⚫','⚪','🔶','🔷','🔸','🔹','🚒','🚑','🚓','🚐','🚁','✈️','⚓','🚀','👨‍🚒','👩‍🚒','🧑‍🚒','👮','👮‍♂️','👮‍♀️','👷','👷‍♂️','👷‍♀️','🧑‍⚕️','👨‍⚕️','👩‍⚕️','🦺','⛑️','🪖','🛡️','⚕️','🏥','💊','🩺','🩹','🩻','🔥','🌊','❄️','🌪️','⚡','🏢','🏫','🏗️','🌐','🗼','⭐','🆘','🔰','🎯','❤️','💙','💚','💛','💜','🧡','🤍','🖤','ℹ️','🆕','🔑','🏴','🏳️','🚨'];
+var _orgSelectedEmoji='➕';
+
+// ════════ STATE ════════
+var state={personal:[],dienste:[],gridData:{}};
+var customQualis=[];
+var DEFAULT_QUALIS=['FF','BF','GF','ZF','RS','NFS','NA'];
+
+var DE_MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+var DE_DAYS=['So','Mo','Di','Mi','Do','Fr','Sa'];
+
+function getAllQualis(){return DEFAULT_QUALIS.concat(customQualis);}
+function getAllDienstTypes(){return SCHICHT_TYPES;}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ════════ TABS ════════
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='tab-schichtplan') renderGrid();
+  if(id==='tab-personal') renderPersonalTable();
+  if(id==='tab-dienste') renderDienste();
+}
+
+// ════════ STATS ════════
+function updateStats(){
+  var p=state.personal;
+  document.getElementById('stat-gesamt').textContent=p.length;
+  document.getElementById('stat-dienste').textContent=state.dienste.length;
+  // Verplante Tage: sum of day-range lengths across all dienste
+  var verplantTage=state.dienste.reduce(function(sum,d){
+    var von=d.datumVon||d.datum;var bis=d.datumBis||d.datum;
+    if(!von) return sum;
+    return sum+Math.max(1,Math.round((new Date(bis)-new Date(von))/86400000)+1);
+  },0);
+  document.getElementById('stat-verplant-tage').textContent=verplantTage;
+  // Verplante Mitarbeiter: unique pids across all dienste
+  var uniqPers=new Set();
+  state.dienste.forEach(function(d){(d.personal||[]).forEach(pid=>uniqPers.add(pid));});
+  document.getElementById('stat-verplant-pers').textContent=uniqPers.size;
+  // Stärkste Organisation: org with most personal
+  var orgCount={};
+  p.forEach(function(x){ orgCount[x.org]=(orgCount[x.org]||0)+1; });
+  var topOrg=null,topN=0;
+  Object.keys(orgCount).forEach(function(k){ if(orgCount[k]>topN){topN=orgCount[k];topOrg=k;} });
+  var topObj=topOrg?ORG_MAP[topOrg]:null;
+  var topLbl=topObj?(topObj.emoji?topObj.emoji+' ':'')+topObj.label:'—';
+  document.getElementById('stat-top-org').textContent=topLbl+(topN>0?' ('+topN+')':'');
+}
+
+// ════════ PERSONAL TABLE ════════
+// Split legacy "Nachname, Vorname" string into parts
+function splitName(s){
+  if(!s) return {n:'',v:''};
+  var parts=(s||'').split(',');
+  return {n:(parts[0]||'').trim(),v:(parts[1]||'').trim()};
+}
+// Display name for grid/dienste: "Nachname, Vorname" or fallback
+function displayName(p){
+  if(p.nachname||p.vorname) return (p.nachname||'')+(p.vorname?', '+p.vorname:'');
+  return p.name||'Unbenannt';
+}
+function buildPersonRow(p){
+  var orgOpts=ORG_LIST.map(o=>'<option value="'+o.id+'"'+(p.org===o.id?' selected':'')+'>'+orgDisplayLabel(o)+'</option>').join('');
+  return '<td><input type="text" value="'+esc(p.nachname||splitName(p.name).n)+'" placeholder="Mustermann" style="min-width:115px;" onchange="updatePerson(this,\''+p.id+'\',\'nachname\')"></td>'+
+    '<td><input type="text" value="'+esc(p.vorname||splitName(p.name).v)+'" placeholder="Max" style="min-width:105px;" onchange="updatePerson(this,\''+p.id+'\',\'vorname\')"></td>'+
+    '<td><input type="text" value="'+esc(p.grad)+'" placeholder="BM / NFS …" style="min-width:130px;" onchange="updatePerson(this,\''+p.id+'\',\'grad\')"></td>'+
+    '<td><select style="min-width:140px;" onchange="updatePerson(this,\''+p.id+'\',\'org\')">'+orgOpts+'</select></td>'+
+    '<td><input type="text" value="'+esc(p.notiz)+'" placeholder="—" style="min-width:165px;" onchange="updatePerson(this,\''+p.id+'\',\'notiz\')"></td>'+
+    '<td><button class="btn-del-row" onclick="deletePerson(\''+p.id+'\')">✕</button></td>';
+}
+
+function renderPersonalTable(){
+  var tbody=document.getElementById('personal-tbody');tbody.innerHTML='';
+  state.personal.forEach(function(p){
+    var tr=document.createElement('tr');tr.dataset.pid=p.id;tr.innerHTML=buildPersonRow(p);tbody.appendChild(tr);
+  });
+  updateStats();
+}
+function updatePerson(el,pid,field){
+  var p=state.personal.find(x=>x.id===pid);
+  if(!p) return;
+  p[field]=el.value;
+  if(field==='nachname'||field==='vorname'){
+    p.name=(p.nachname||'')+(p.vorname?', '+p.vorname:'');
+  }
+  updateStats();
+  if(field==='name'||field==='nachname'||field==='vorname'||field==='org') renderGrid();
+}
+function deletePerson(pid){
+  state.personal=state.personal.filter(x=>x.id!==pid);
+  var tr=document.querySelector('tr[data-pid="'+pid+'"]');
+  if(tr) tr.remove();
+  updateStats();renderGrid();renderDienste();
+}
+
+// ════════ DIENSTE ════════
+function renderDienste(){
+  var list=document.getElementById('dienst-list');list.innerHTML='';
+  if(!state.dienste.length){
+    list.innerHTML='<div style="color:var(--g4);font-family:\'IBM Plex Mono\',monospace;font-size:11px;padding:14px 0;">Noch keine Dienste angelegt.</div>';
+    return;
+  }
+  state.dienste.forEach(function(d){
+    var allTypes=getAllDienstTypes();
+    var tObj=allTypes.find(t=>t.id===d.type)||{label:d.type,fg:'#5aaddf'};
+    var lc=tObj.fg||'var(--blau)';
+    var typeOpts=allTypes.map(t=>'<option value="'+t.id+'"'+(d.type===t.id?' selected':'')+'>'+t.label+'</option>').join('');
+    var persHtml=state.personal.length>0
+      ?state.personal.map(function(p){
+          var chk=(d.personal||[]).indexOf(p.id)>=0;
+          var org=ORG_MAP[p.org]||{};
+          return '<div class="pers-cb-item'+(chk?' checked':'')+'" onclick="toggleDienstPerson(this,\''+d.id+'\',\''+p.id+'\')" data-pid="'+p.id+'">'+
+            '<div class="pers-cb-box">'+(chk?'✓':'')+'</div>'+
+            '<span>'+displayName(p)+'</span>'+
+            '<span style="font-size:10px;color:var(--g4);">('+esc(org.short||p.org)+')</span>'+
+          '</div>';
+        }).join('')
+      :'<span style="font-size:11px;color:var(--g4);">Kein Personal im Stamm.</span>';
+    var card=document.createElement('div');
+    card.className='dienst-card';card.style.borderLeftColor=lc;card.dataset.did=d.id;
+    card.innerHTML=
+      '<div class="dc-head">'+
+        '<input class="dc-title-inp" type="text" value="'+esc(d.name)+'" onchange="updateDienst(this,\''+d.id+'\',\'name\')">'+
+        '<span class="dc-date" id="ddate-'+d.id+'">'+fmtDate(d.datum)+'</span>'+
+        '<span class="dc-type-badge" style="color:'+esc(tObj.fg||'#5aaddf')+'">'+esc(tObj.label)+'</span>'+
+      '</div>'+
+      '<div class="dc-body">'+
+        '<div class="f"><label>Typ</label><select>'+typeOpts+'</select></div>'+
+        '<div class="f"><label>Datum von</label><input type="date" value="'+esc(d.datumVon||d.datum)+'" onchange="updateDienstRange(this,\''+d.id+'\',\'von\')"></div>'+
+        '<div class="f"><label>Datum bis</label><input type="date" value="'+esc(d.datumBis||d.datum)+'" onchange="updateDienstRange(this,\''+d.id+'\',\'bis\')"></div>'+
+        '<div class="f"><label>Von</label><input type="time" value="'+esc(d.von)+'" onchange="updateDienst(this,\''+d.id+'\',\'von\')"></div>'+
+        '<div class="f"><label>Bis</label><input type="time" value="'+esc(d.bis)+'" onchange="updateDienst(this,\''+d.id+'\',\'bis\')"></div>'+
+        '<div class="f"><label>Ort / Fahrzeug</label><input type="text" value="'+esc(d.ort)+'" placeholder="FW-Haus / HLF-1" onchange="updateDienst(this,\''+d.id+'\',\'ort\')"></div>'+
+        '<div class="f"><label>Mindeststärke</label><input type="number" value="'+esc(d.minst)+'" placeholder="4" min="1" onchange="updateDienst(this,\''+d.id+'\',\'minst\')"></div>'+
+        '<div class="f"><label>Bemerkung</label><input type="text" value="'+esc(d.bemerkung)+'" placeholder="—" onchange="updateDienst(this,\''+d.id+'\',\'bemerkung\')"></div>'+
+      '</div>'+
+      '<div class="dc-pers-section">'+
+        '<div class="dc-pers-label">Eingeplantes Personal</div>'+
+        '<div class="dc-pers-grid" id="dpg-'+d.id+'">'+persHtml+'</div>'+
+      '</div>'+
+      '<div class="dc-actions"><button class="dc-btn danger" onclick="deleteDienst(\''+d.id+'\')">✕ Löschen</button></div>';
+    list.appendChild(card);
+    // color the type select
+    (function(did2){
+      var cTypeSel=card.querySelector('.dc-body select');
+      if(!cTypeSel) return;
+      SCHICHT_TYPES.forEach(function(t){
+        var opt=Array.from(cTypeSel.options).find(o=>o.value===t.id);
+        if(opt){opt.dataset.bg=t.bg;opt.dataset.fg=t.fg;}
+      });
+      applyTypeSelectColor(cTypeSel);
+      cTypeSel.onchange=function(){updateDienstType(this,did2);applyTypeSelectColor(this);};
+    })(d.id);
+  });
+}
+
+function toggleDienstPerson(el,did,pid){
+  var d=state.dienste.find(x=>x.id===did);if(!d) return;
+  if(!d.personal) d.personal=[];
+  if(el.classList.contains('checked')){
+    el.classList.remove('checked');el.querySelector('.pers-cb-box').textContent='';
+    d.personal=d.personal.filter(x=>x!==pid);
+  } else {
+    el.classList.add('checked');el.querySelector('.pers-cb-box').textContent='✓';
+    if(d.personal.indexOf(pid)<0) d.personal.push(pid);
+  }
+  renderGrid();
+}
+function updateDienst(el,did,f){var d=state.dienste.find(x=>x.id===did);if(d){d[f]=el.value;if(f==='datum') renderGrid();}}
+function updateDienstRange(el,did,which){
+  var d=state.dienste.find(x=>x.id===did);if(!d) return;
+  if(which==='von'){
+    d.datumVon=el.value;d.datum=el.value;
+    if(!d.datumBis||d.datumBis<el.value) d.datumBis=el.value;
+  } else {
+    d.datumBis=el.value;
+    if(el.value<(d.datumVon||d.datum)) d.datumBis=d.datumVon||d.datum;
+  }
+  var card=document.querySelector('.dienst-card[data-did="'+did+'"]');
+  if(card){
+    var lbl=card.querySelector('.dc-date');
+    if(lbl) lbl.textContent=(d.datumBis&&d.datumBis!==d.datumVon)
+      ?fmtDate(d.datumVon)+' – '+fmtDate(d.datumBis):fmtDate(d.datumVon);
+    // keep bis-field in sync if von was changed
+    if(which==='von'){
+      var bis=card.querySelectorAll('input[type="date"]')[1];
+      if(bis) bis.value=d.datumBis;
+    }
+  }
+  renderGrid();
+}
+function updateDienstRange(el,did,which){
+  var d=state.dienste.find(x=>x.id===did);if(!d) return;
+  if(which==='von'){
+    d.datumVon=el.value;d.datum=el.value;
+    if(!d.datumBis||d.datumBis<el.value) d.datumBis=el.value;
+  } else {
+    d.datumBis=el.value;
+    if(el.value<(d.datumVon||d.datum)) d.datumBis=d.datumVon||d.datum;
+  }
+  // update header date label
+  var card=document.querySelector('.dienst-card[data-did="'+did+'"]');
+  if(card){
+    var lbl=card.querySelector('.dc-date');
+    if(lbl) lbl.textContent=(d.datumBis&&d.datumBis!==d.datumVon)
+      ?fmtDate(d.datumVon)+' – '+fmtDate(d.datumBis):fmtDate(d.datumVon);
+  }
+  renderGrid();
+}
+function updateDateLabel(el,did){var l=document.getElementById('ddate-'+did);if(l) l.textContent=fmtDate(el.value);}
+function updateDienstType(sel,did){
+  var d=state.dienste.find(x=>x.id===did);if(!d) return;
+  d.type=sel.value;
+  var t=getAllDienstTypes().find(x=>x.id===d.type)||{label:d.type,fg:'#5aaddf'};
+  var card=document.querySelector('.dienst-card[data-did="'+did+'"]');
+  if(card){
+    var b=card.querySelector('.dc-type-badge');if(b){b.textContent=t.label;b.style.color=t.fg||'#5aaddf';}
+    card.style.borderLeftColor=t.fg||'var(--blau)';
+  }
+  updateStats();renderGrid();
+}
+function deleteDienst(did){state.dienste=state.dienste.filter(x=>x.id!==did);renderDienste();updateStats();renderGrid();}
+function fmtDate(v){if(!v) return '—';var p=v.split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:v;}
+
+// ════════ SCHICHTPLAN GRID ════════
+// Grid shows dienst-assignments, not manual gridData
+// For each person+day, find dienste that: have the person in .personal, and .datum matches day
+function getDienstForPersonDay(pid, dateStr){
+  return state.dienste.find(function(d){
+    if((d.personal||[]).indexOf(pid)<0) return false;
+    var von=d.datumVon||d.datum;
+    var bis=d.datumBis||d.datum;
+    return dateStr>=von && dateStr<=bis;
+  })||null;
+}
+function getDienstCodeForPersonDay(pid, jahr, monat, day){
+  var dateStr=jahr+'-'+String(monat+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+  var d=getDienstForPersonDay(pid,dateStr);
+  if(!d) return '';
+  var t=SCHICHT_TYPES.find(x=>x.id===d.type);
+  return t?t.code:(d.type.slice(0,2).toUpperCase());
+}
+function getDienstStyleForPersonDay(pid, jahr, monat, day){
+  var dateStr=jahr+'-'+String(monat+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+  var d=getDienstForPersonDay(pid,dateStr);
+  if(!d) return {bg:'var(--inp-bg)',fg:'var(--g5)',code:'',von:'',bis:''};
+  var t=SCHICHT_TYPES.find(x=>x.id===d.type);
+  var code=t?t.code:(d.type.slice(0,2).toUpperCase());
+  var von=d.von||'';var bis=d.bis||'';
+  return t?{bg:t.bg,fg:t.fg,code:code,von:von,bis:bis}:{bg:'rgba(26,107,154,.15)',fg:'#5aaddf',code:code,von:von,bis:bis};
+}
+
+function getSchichtStyle(code){
+  if(!code) return {bg:'var(--inp-bg)',fg:'var(--g5)'};
+  var s=SCHICHT_TYPES.find(x=>x.code===code);
+  return s?{bg:s.bg,fg:s.fg}:{bg:'rgba(26,107,154,.15)',fg:'#5aaddf'};
+}
+
+function renderLegend(){
+  var leg=document.getElementById('schicht-legend');
+  var usedCodes=new Set();
+  var monat=document.getElementById('grid-monat').selectedIndex;
+  var jahr=parseInt(document.getElementById('grid-jahr').value)||new Date().getFullYear();
+  var days=new Date(jahr,monat+1,0).getDate();
+  state.personal.forEach(function(p){
+    for(var d=1;d<=days;d++){
+      var s=getDienstStyleForPersonDay(p.id,jahr,monat,d);
+      if(s.code) usedCodes.add(s.code);
+    }
+  });
+  var html='<span style="font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--g4);">Legende:</span>';
+  SCHICHT_TYPES.forEach(function(s){
+    if(usedCodes.has(s.code)||usedCodes.size===0){
+      html+='<div class="leg-item"><div class="leg-dot" style="background:'+s.bg+';color:'+s.fg+';">'+s.code+'</div><span>'+s.label+'</span></div>';
+    }
+  });
+  if(usedCodes.size===0){
+    html='<span style="font-size:10px;color:var(--g4);font-family:\'IBM Plex Mono\',monospace;">Schichten aus "Dienste & Schichten" werden hier angezeigt.</span>';
+  }
+  leg.innerHTML=html;
+}
+
+function renderGrid(){
+  var monat=document.getElementById('grid-monat').selectedIndex;
+  var jahr=parseInt(document.getElementById('grid-jahr').value)||new Date().getFullYear();
+  var days=new Date(jahr,monat+1,0).getDate();
+  var today=new Date();
+  var todayDay=(today.getFullYear()===jahr&&today.getMonth()===monat)?today.getDate():-1;
+
+  var thead=document.getElementById('grid-head');
+  var hr='<tr><th style="position:sticky;left:0;z-index:3;background:var(--head-bg);min-width:155px;">Personal</th>';
+  for(var d=1;d<=days;d++){
+    var dow=new Date(jahr,monat,d).getDay();
+    var s='';
+    if(d===todayDay) s='border-bottom:2px solid var(--rot);color:var(--g1);';
+    else if(dow===0||dow===6) s='color:var(--rot);';
+    hr+='<th style="'+s+'">'+DE_DAYS[dow]+'<br>'+d+'</th>';
+  }
+  hr+='<th>Σ</th></tr>';
+  thead.innerHTML=hr;
+
+  var tbody=document.getElementById('grid-body');tbody.innerHTML='';
+
+  // Group by org — using ORG_LIST order, custom orgs included
+  var grpMap={};ORG_LIST.forEach(o=>{grpMap[o.id]=[];});
+  var _gridSearch=(document.getElementById('grid-search')||{value:''}).value.trim().toLowerCase();
+  var _gridPersonal=_gridSearch?state.personal.filter(p=>displayName(p).toLowerCase().includes(_gridSearch)):state.personal;
+  _gridPersonal.forEach(function(p){
+    if(grpMap[p.org]) grpMap[p.org].push(p);
+    else {grpMap[p.org]=[p];}// custom org not in ORG_LIST yet
+  });
+
+  ORG_LIST.forEach(function(org){
+    var members=grpMap[org.id]||[];
+    if(!members.length) return;
+    var gr=document.createElement('tr');gr.className='grp-row';
+    gr.innerHTML='<td colspan="'+(days+2)+'">'+orgDisplayLabel(org)+'</td>';
+    tbody.appendChild(gr);
+    members.forEach(function(p){
+      var tr=document.createElement('tr');
+      var orgObj=ORG_MAP[p.org]||{short:p.org};
+      var cells='<td class="name-cell">'+esc(displayName(p))+(p.grad?'<br><span style="font-size:9px;color:var(--g4);">'+esc(p.grad)+'</span>':'')+'</td>';
+      var cnt=0;
+      for(var d=1;d<=days;d++){
+        var st=getDienstStyleForPersonDay(p.id,jahr,monat,d);
+        var tdS=(d===todayDay)?'background:rgba(192,57,43,.04);':'';
+        if(st.code) cnt++;
+        var timeHtml=(st.von||st.bis)?'<span class="schicht-time">'+(st.von?st.von.slice(0,5):'')+(st.bis?'–'+st.bis.slice(0,5):'')+'</span>':'';
+        cells+='<td style="'+tdS+'">'+
+          '<div class="schicht-cell" style="background:'+st.bg+';color:'+st.fg+';">'+esc(st.code)+timeHtml+'</div>'+
+        '</td>';
+      }
+      cells+='<td id="gcnt-'+p.id+'" style="text-align:center;font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:var(--g4);">'+cnt+'</td>';
+      tr.innerHTML=cells;tbody.appendChild(tr);
+    });
+  });
+
+  // Persons with unknown org
+  Object.keys(grpMap).forEach(function(gk){
+    if(ORG_LIST.find(o=>o.id===gk)) return;
+    var members=grpMap[gk];if(!members.length) return;
+    var gr=document.createElement('tr');gr.className='grp-row';
+    gr.innerHTML='<td colspan="'+(days+2)+'">'+esc(gk)+'</td>';
+    tbody.appendChild(gr);
+    members.forEach(function(p){
+      var tr=document.createElement('tr');
+      var cells='<td class="name-cell">'+esc(displayName(p))+'</td>';
+      var cnt=0;
+      for(var d=1;d<=days;d++){
+        var st=getDienstStyleForPersonDay(p.id,jahr,monat,d);
+        var tdS=(d===todayDay)?'background:rgba(192,57,43,.04);':'';
+        if(st.code) cnt++;
+        var tH2=(st.von||st.bis)?'<span class="schicht-time">'+(st.von?st.von.slice(0,5):'')+(st.bis?'–'+st.bis.slice(0,5):'')+'</span>':'';
+        cells+='<td style="'+tdS+'"><div class="schicht-cell" style="background:'+st.bg+';color:'+st.fg+';">'+esc(st.code)+tH2+'</div></td>';
+      }
+      cells+='<td>'+cnt+'</td>';
+      tr.innerHTML=cells;tbody.appendChild(tr);
+    });
+  });
+
+  if(!state.personal.length){
+    var e=document.createElement('tr');
+    e.innerHTML='<td colspan="'+(days+2)+'" style="padding:18px;color:var(--g4);font-family:\'IBM Plex Mono\',monospace;font-size:11px;text-align:center;">Noch kein Personal. Gehe zu "Personalstamm".</td>';
+    tbody.appendChild(e);
+  }
+  renderLegend();
+}
+
+// ════════ PERSON SEARCH (in Dienst Modal) ════════
+var _mdSelectedPers=[];
+
+function persSearchInput(){
+  var q=document.getElementById('md-pers-search').value.trim().toLowerCase();
+  var drop=document.getElementById('md-pers-drop');
+  if(!q){drop.classList.remove('open');drop.innerHTML='';return;}
+  var matches=state.personal.filter(p=>displayName(p).toLowerCase().includes(q)&&_mdSelectedPers.indexOf(p.id)<0);
+  if(!matches.length){drop.innerHTML='<div class="pers-search-item" style="color:var(--g4);">Keine Ergebnisse</div>';drop.classList.add('open');return;}
+  drop.innerHTML=matches.map(p=>{
+    var org=ORG_MAP[p.org]||{};
+    return '<div class="pers-search-item" onclick="addPersToMdSelection(\''+p.id+'\')">'+
+      esc(displayName(p))+'<span class="psi-org">'+esc(org.short||p.org)+'</span></div>';
+  }).join('');
+  drop.classList.add('open');
+}
+function closePersSearch(){document.getElementById('md-pers-drop').classList.remove('open');}
+function addPersToMdSelection(pid){
+  if(_mdSelectedPers.indexOf(pid)<0) _mdSelectedPers.push(pid);
+  document.getElementById('md-pers-search').value='';
+  document.getElementById('md-pers-drop').classList.remove('open');
+  renderMdSelectedPers();
+}
+function removePersFromMdSelection(pid){
+  _mdSelectedPers=_mdSelectedPers.filter(x=>x!==pid);
+  renderMdSelectedPers();
+}
+function renderMdSelectedPers(){
+  var cont=document.getElementById('md-selected-pers');
+  cont.innerHTML=_mdSelectedPers.map(function(pid){
+    var p=state.personal.find(x=>x.id===pid);
+    var name=p?p.name:'?';
+    return '<div style="display:flex;align-items:center;gap:4px;background:rgba(26,107,154,.18);border:1px solid rgba(26,107,154,.4);padding:3px 8px;font-size:12px;">'+
+      esc(name)+'<button onclick="removePersFromMdSelection(\''+pid+'\')" style="background:none;border:none;cursor:pointer;color:var(--g4);font-size:12px;padding:0 0 0 4px;line-height:1;">✕</button></div>';
+  }).join('');
+}
+
+// ════════ CUSTOM QUALIFIKATIONEN ════════
+
+
+
+// ════════ CUSTOM ORGANISATIONEN ════════
+function toggleOrgEmojiPicker(){
+  var grid=document.getElementById('org-emoji-grid');
+  if(grid.style.display==='none'){
+    var list=document.getElementById('org-emoji-list');
+    list.innerHTML=ORG_EMOJIS.map(e=>
+      '<button onclick="selectOrgEmoji(\''+e+'\')" style="background:'+(e===_orgSelectedEmoji?'rgba(26,107,154,.25)':'var(--inp-bg)')+';border:1px solid var(--g6);cursor:pointer;font-size:18px;padding:3px 5px;line-height:1;transition:background .1s;" title="'+e+'">'+e+'</button>'
+    ).join('');
+    grid.style.display='block';
+  } else {
+    grid.style.display='none';
+  }
+}
+function selectOrgEmoji(e){
+  _orgSelectedEmoji=e;
+  document.getElementById('org-emoji-btn').textContent=e;
+  document.getElementById('org-emoji-grid').style.display='none';
+}
+function renderOrgList(){
+  var list=document.getElementById('org-list');list.innerHTML='';
+  ORG_LIST.forEach(function(o,i){
+    var li=document.createElement('div');li.className='custom-list-item';
+    var badge='<span style="font-size:16px;margin-right:2px;">'+(o.emoji||'')+'</span>';
+    if(o.standard){
+      li.innerHTML=badge+'<span class="name">'+esc(o.label)+'</span><span class="tag">'+esc(o.short)+'</span><span class="tag">Standard</span>';
+    } else {
+      li.innerHTML=badge+'<span class="name">'+esc(o.label)+'</span><span class="tag">'+esc(o.short)+'</span><button class="del-btn" onclick="deleteCustomOrg('+i+')">✕</button>';
+    }
+    list.appendChild(li);
+  });
+}
+function addCustomOrg(){
+  var lbl=document.getElementById('new-org-label').value.trim();
+  var srt=document.getElementById('new-org-short').value.trim();
+  if(!lbl) return;
+  if(!srt) srt=lbl.slice(0,4).toUpperCase();
+  var id='org_'+lbl.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+Date.now().toString(36);
+  if(ORG_LIST.find(o=>o.label===lbl)){showToast('Organisation existiert bereits.');return;}
+  ORG_LIST.push({id:id,emoji:_orgSelectedEmoji==='➕'?'⚪':_orgSelectedEmoji,label:lbl,short:srt,standard:false});
+  rebuildOrgMap();
+  document.getElementById('new-org-label').value='';document.getElementById('new-org-short').value='';
+  _orgSelectedEmoji='➕';document.getElementById('org-emoji-btn').textContent='➕';
+  renderOrgList();renderGrid();showToast('"'+lbl+'" hinzugefügt.');
+}
+function deleteCustomOrg(i){
+  if(ORG_LIST[i]&&ORG_LIST[i].standard){showToast('Standard-Organisationen können nicht gelöscht werden.');return;}
+  ORG_LIST.splice(i,1);rebuildOrgMap();renderOrgList();renderGrid();
+}
+function refreshOrgSelects(){
+  rebuildOrgMap();
+  var opts=ORG_LIST.map(o=>'<option value="'+o.id+'">'+orgDisplayLabel(o)+'</option>').join('');
+  var ms=document.getElementById('mp-org');if(ms) ms.innerHTML=opts;
+  state.personal.forEach(function(p){
+    var tr=document.querySelector('tr[data-pid="'+p.id+'"]');
+    if(tr){var sel=tr.querySelectorAll('select')[0];if(sel) sel.innerHTML=ORG_LIST.map(o=>'<option value="'+o.id+'"'+(p.org===o.id?' selected':'')+'>'+orgDisplayLabel(o)+'</option>').join('');}
+  });
+  renderGrid();
+}
+
+// ════════ CUSTOM DIENST-TYPEN ════════
+function initDtypeColorRow(){
+  var row=document.getElementById('dtype-color-row');if(!row) return;
+  row.innerHTML=DTYPE_COLORS.map((c,i)=>
+    '<div class="color-swatch'+(i===_dtypeColorSel?' sel':'')+'" style="background:'+c.bg+';border-color:'+c.fg+';" onclick="selectDtypeColor('+i+')" title="'+c.fg+'"></div>'
+  ).join('');
+}
+function selectDtypeColor(i){
+  _dtypeColorSel=i;
+  document.querySelectorAll('#dtype-color-row .color-swatch').forEach((el,j)=>el.classList.toggle('sel',j===i));
+  updateDtypePreview();
+}
+function updateDtypePreview(){
+  var code=document.getElementById('new-dtype-code').value.trim().toUpperCase()||'AB';
+  var col=DTYPE_COLORS[_dtypeColorSel];
+  var prev=document.getElementById('dtype-preview');
+  if(prev){prev.style.background=col.bg;prev.style.color=col.fg;prev.textContent=code;}
+}
+function renderDienstTypeList(){
+  var list=document.getElementById('dienst-type-list');list.innerHTML='';
+  SCHICHT_TYPES.forEach(function(t,i){
+    var swatch='<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:16px;background:'+t.bg+';color:'+t.fg+';font-family:IBM Plex Mono,monospace;font-size:8px;font-weight:700;margin-right:6px;flex-shrink:0;">'+t.code+'</span>';
+    var li=document.createElement('div');li.className='custom-list-item';
+    li.innerHTML=swatch+'<span class="name">'+esc(t.label)+'</span>'+(t.standard?'<span class="tag">Standard</span>':'<button class="del-btn" onclick="deleteCustomDienstType('+i+')">✕</button>');
+    list.appendChild(li);
+  });
+}
+function addCustomDienstType(){
+  var lbl=document.getElementById('new-dtype-label').value.trim();
+  var code=(document.getElementById('new-dtype-code').value.trim().toUpperCase()||'').slice(0,3);
+  if(!lbl) return;
+  if(SCHICHT_TYPES.find(t=>t.label===lbl)){showToast('Typ existiert bereits.');return;}
+  if(!code){
+    var words=lbl.split(/\s+/);
+    code=words.length>=2?(words[0][0]+words[1][0]).toUpperCase():lbl.slice(0,3).toUpperCase();
+  }
+  var existing=SCHICHT_TYPES.map(t=>t.code);
+  var base=code;var n=2;while(existing.indexOf(code)>=0){code=base+n;n++;}
+  var col=DTYPE_COLORS[_dtypeColorSel];
+  var id='custom_'+lbl.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+Date.now().toString(36);
+  SCHICHT_TYPES.push({id:id,code:code,label:lbl,bg:col.bg,fg:col.fg,standard:false});
+  document.getElementById('new-dtype-label').value='';document.getElementById('new-dtype-code').value='';
+  renderDienstTypeList();renderLegend();updateDtypePreview();
+  showToast('"'+lbl+'" ('+code+') hinzugefügt.');
+}
+function deleteCustomDienstType(i){
+  if(SCHICHT_TYPES[i]&&SCHICHT_TYPES[i].standard){showToast('Standard-Typen können nicht gelöscht werden.');return;}
+  SCHICHT_TYPES.splice(i,1);renderDienstTypeList();renderLegend();
+}
+function refreshDienstTypeSelects(){
+  var opts=SCHICHT_TYPES.map(t=>'<option value="'+t.id+'">'+t.label+'</option>').join('');
+  var ms=document.getElementById('md-type');if(ms) ms.innerHTML=opts;
+  state.dienste.forEach(function(d){
+    var card=document.querySelector('.dienst-card[data-did="'+d.id+'"]');
+    if(card){var sel=card.querySelector('select');if(sel) sel.innerHTML=SCHICHT_TYPES.map(t=>'<option value="'+t.id+'"'+(d.type===t.id?' selected':'')+'>'+t.label+'</option>').join('');}
+  });
+  renderLegend();
+}
+
+// ════════ MODALS ════════
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='modal-custom-org') renderOrgList();
+  if(id==='modal-custom-dienst-type'){renderDienstTypeList();initDtypeColorRow();updateDtypePreview();}
+  if(id==='modal-personal'){
+    document.getElementById('mp-org').innerHTML=ORG_LIST.map(o=>'<option value="'+o.id+'">'+orgDisplayLabel(o)+'</option>').join('');
+  }
+  if(id==='modal-dienst'){
+    var mdTypeSel=document.getElementById('md-type');
+    mdTypeSel.innerHTML=SCHICHT_TYPES.map(t=>'<option value="'+t.id+'" data-fg="'+t.fg+'" data-bg="'+t.bg+'">'+t.label+'</option>').join('');
+    applyTypeSelectColor(mdTypeSel);
+    mdTypeSel.onchange=function(){applyTypeSelectColor(this);};
+    _mdSelectedPers=[];renderMdSelectedPers();
+    document.getElementById('md-pers-search').value='';
+    document.getElementById('md-pers-drop').classList.remove('open');
+    document.getElementById('md-datum-von').value='';
+    document.getElementById('md-datum-bis').value='';
+  }
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function savePersonFromModal(){
+  var nn=document.getElementById('mp-nachname').value.trim();
+  var vn=document.getElementById('mp-vorname').value.trim();
+  var name=(nn&&vn)?nn+', '+vn:(nn||vn);
+  var p={id:'p'+Date.now().toString(36),name:name,nachname:nn,vorname:vn,grad:document.getElementById('mp-grad').value,
+    org:document.getElementById('mp-org').value,
+    notiz:document.getElementById('mp-notiz').value};
+  state.personal.push(p);
+  var tbody=document.getElementById('personal-tbody');
+  var tr=document.createElement('tr');tr.dataset.pid=p.id;tr.innerHTML=buildPersonRow(p);tbody.appendChild(tr);
+  updateStats();renderGrid();renderDienste();
+  closeModal('modal-personal');
+  ['mp-nachname','mp-vorname','mp-grad','mp-notiz'].forEach(i=>document.getElementById(i).value='');
+  showToast('"'+p.name+'" hinzugefügt.');
+}
+
+function applyTypeSelectColor(sel){
+  var opt=sel.options[sel.selectedIndex];
+  var fg=(opt&&opt.dataset.fg)||'var(--g5)';
+  // Reset select to neutral
+  sel.style.background='var(--inp-bg)';
+  sel.style.color='var(--g1)';
+  sel.style.borderColor='';
+  sel.style.fontWeight='';
+  sel.style.fontFamily='';
+  sel.style.fontSize='';
+  sel.style.letterSpacing='';
+  // Color the adjacent swatch strip
+  var swatch=sel.parentElement&&sel.parentElement.querySelector('#md-type-swatch');
+  if(!swatch){
+    // card type select — find sibling or use border
+    sel.style.borderLeft='4px solid '+fg;
+    return;
+  }
+  swatch.style.background=fg;
+}
+function mdSyncDatumBis(){
+  var v=document.getElementById('md-datum-von').value;
+  var bis=document.getElementById('md-datum-bis');
+  if(!bis.value||bis.value<v) bis.value=v;
+}
+function saveDienstFromModal(){
+  var datVon=document.getElementById('md-datum-von').value;
+  var datBis=document.getElementById('md-datum-bis').value||datVon;
+  if(!datVon){showToast('Bitte Datum angeben.');return;}
+  if(datBis<datVon) datBis=datVon;
+  var name=document.getElementById('md-name').value||'Dienst';
+  var d={
+    id:'d'+Date.now().toString(36),
+    name:name,
+    type:document.getElementById('md-type').value,
+    datumVon:datVon,
+    datumBis:datBis,
+    // keep datum=datVon for backward compat display
+    datum:datVon,
+    von:document.getElementById('md-von').value,
+    bis:document.getElementById('md-bis').value,
+    ort:document.getElementById('md-ort').value,
+    minst:document.getElementById('md-minst').value,
+    bemerkung:document.getElementById('md-bemerkung').value,
+    personal:_mdSelectedPers.slice()
+  };
+  state.dienste.push(d);
+  closeModal('modal-dienst');
+  switchTab('tab-dienste',document.getElementById('tabbtn-dienste'));
+  renderDienste();updateStats();renderGrid();
+  var days=datVon===datBis?'1 Tag':(Math.round((new Date(datBis)-new Date(datVon))/86400000)+1)+' Tage';
+  showToast('"'+name+'" – '+days+' angelegt.');
+}
+
+// ════════ EXPORT / IMPORT ════════
+function doExport(){
+  var data={
+    meta:{org:document.getElementById('org-name').value,von:document.getElementById('plan-von').value,
+      bis:document.getElementById('plan-bis').value,nr:document.getElementById('plan-nr').value,
+      ersteller:document.getElementById('plan-ersteller').value,
+      status:document.getElementById('plan-status').value,exportedAt:new Date().toISOString()},
+    personal:state.personal,dienste:state.dienste,
+    customQualis:customQualis,
+    customSchichtTypes:SCHICHT_TYPES.filter(t=>!t.standard),
+    customOrgs:ORG_LIST.filter(o=>!o.standard)
+  };
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Personalplan_'+(data.meta.org||'export').replace(/[^a-zA-Z0-9]/g,'_')+'_'+new Date().toISOString().split('T')[0]+'.json';
+  a.click();showToast('Export erfolgreich.');
+}
+function doImport(input){
+  var file=input.files[0];if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(data.meta){['org-name','plan-von','plan-bis','plan-nr','plan-ersteller','plan-status'].forEach(function(id,i){
+        var keys=['org','von','bis','nr','ersteller','status'];if(data.meta[keys[i]]) document.getElementById(id).value=data.meta[keys[i]];
+      });}
+      if(data.personal) state.personal=data.personal;
+      if(data.dienste) state.dienste=data.dienste;
+      if(data.customQualis) customQualis=data.customQualis;
+      if(data.customOrgs&&Array.isArray(data.customOrgs)){
+        while(ORG_LIST.length&&!ORG_LIST[ORG_LIST.length-1].standard) ORG_LIST.pop();
+        data.customOrgs.forEach(o=>ORG_LIST.push(o));rebuildOrgMap();
+      }
+      if(data.customSchichtTypes&&Array.isArray(data.customSchichtTypes)){
+        while(SCHICHT_TYPES.length&&!SCHICHT_TYPES[SCHICHT_TYPES.length-1].standard) SCHICHT_TYPES.pop();
+        data.customSchichtTypes.forEach(t=>SCHICHT_TYPES.push(t));
+      }
+      renderPersonalTable();renderDienste();renderGrid();updateStats();
+      showToast('Import: '+state.personal.length+' Personen, '+state.dienste.length+' Dienste.');
+    }catch(err){showToast('Import-Fehler: Ungültiges Format.');}
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+// ════════ THEME / PRINT / TOAST ════════
+var _dark=true;
+function toggleTheme(){_dark=!_dark;document.documentElement.setAttribute('data-theme',_dark?'dark':'light');}
+function doPrint(){
+  // Mark active tab with print-active class
+  var activePaneId=null;
+  document.querySelectorAll('.tab-pane').forEach(function(p){
+    if(p.classList.contains('active')){p.classList.add('print-active');activePaneId=p.id;}
+  });
+  // Build filename: ORGANISATION ZEITRAUM ERSTELLER
+  var org=document.getElementById('org-name').value||'Personalplan';
+  var von=document.getElementById('plan-von').value;
+  var bis=document.getElementById('plan-bis').value;
+  var zeitraum=von&&bis?(von+' bis '+bis):von||bis||'';
+  var ersteller=document.getElementById('plan-ersteller').value||'';
+  var parts=[org];
+  if(zeitraum) parts.push(zeitraum);
+  if(ersteller) parts.push(ersteller);
+  document.title=parts.join(' – ');
+  window.print();
+  // Restore
+  document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('print-active');});
+}
+function showToast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// postMessage API
+window.addEventListener('message',function(e){
+  var d=e.data;if(!d||d.target!=='personalplan') return;
+  if(d.fn==='toggleTheme') toggleTheme();
+  if(d.fn==='doPrint') doPrint();
+  if(d.fn==='doExport') doExport();
+  if(d.fn==='triggerImport') document.getElementById('pp-import-file').click();
+  if(d.fn==='openModalPersonal') openModal('modal-personal');
+  if(d.fn==='openModalDienst') openModal('modal-dienst');
+});
+
+// ════════ INIT ════════
+(function(){
+  var now=new Date();
+  document.getElementById('plan-von').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-01';
+  var last=new Date(now.getFullYear(),now.getMonth()+1,0);
+  document.getElementById('plan-bis').value=last.getFullYear()+'-'+String(last.getMonth()+1).padStart(2,'0')+'-'+String(last.getDate()).padStart(2,'0');
+  document.getElementById('plan-nr').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('grid-monat').selectedIndex=now.getMonth();
+  document.getElementById('grid-jahr').value=now.getFullYear();
+  document.getElementById('md-type').innerHTML=SCHICHT_TYPES.map(t=>'<option value="'+t.id+'">'+t.label+'</option>').join('');
+  // code input updates preview live
+  var ci=document.getElementById('new-dtype-code');if(ci) ci.addEventListener('input',updateDtypePreview);
+
+  state.personal.push({id:'p1',name:'Mustermann, Max',nachname:'Mustermann',vorname:'Max',grad:'Gruppenführer',org:'fw',notiz:'AGT-Träger'});
+  renderPersonalTable();renderDienste();renderGrid();updateStats();
+})();
+</script>
+</body>
+</html>
