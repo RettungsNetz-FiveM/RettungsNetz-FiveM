@@ -276,6 +276,7 @@ body {
 .m-group-label.rot   { color: #C0392B; border-left: 3px solid #C0392B; padding-left: 5px; background: rgba(192,57,43,.08); }
 .m-group-label.blau  { color: #1A6B9A; border-left: 3px solid #1A6B9A; padding-left: 5px; background: rgba(26,107,154,.08); }
 .m-group-label.gruen { color: #1A7A5E; border-left: 3px solid #1A7A5E; padding-left: 5px; background: rgba(26,122,94,.08); }
+.m-group-label.gelb  { color: #9A7A1A; border-left: 3px solid #C9A227; padding-left: 5px; background: rgba(201,162,39,.10); }
 .m-groups-row { display: flex; gap: 14px; align-items: flex-start; }
 .m-groups-row > .m-group { flex: 1; }
 .m-sep { width: 1px; background: var(--g6); align-self: stretch; flex-shrink: 0; }
@@ -448,6 +449,7 @@ body {
   .m-group-label.rot   { background: rgba(192,57,43,.08) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .m-group-label.blau  { background: rgba(26,107,154,.08) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .m-group-label.gruen { background: rgba(26,122,94,.08) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .m-group-label.gelb  { background: rgba(201,162,39,.10) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 /* JS sets body.printing before window.print() to hide placeholders */
 body.printing input::placeholder,
@@ -720,7 +722,7 @@ body.printing textarea::placeholder { color: transparent !important; }
                 <circle cx="57" cy="19" r="2" fill="#555" opacity=".5" pointer-events="none"/>
                 <circle cx="73" cy="19" r="2" fill="#555" opacity=".5" pointer-events="none"/>
                 <path d="M57 27 Q65 32 73 27" stroke="#555" stroke-width="1" opacity=".45" fill="none" pointer-events="none"/>
-                <text id="bmt-Kopf" x="65" y="22" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="700" fill="#777" pointer-events="none">Kopf</text>
+                <text id="bmt-Kopf" x="65" y="22" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="700" fill="#777" pointer-events="none"> </text>
               </g>
 
               <!-- Hals dekorativ -->
@@ -732,7 +734,7 @@ body.printing textarea::placeholder { color: transparent !important; }
                 <line x1="65" y1="54" x2="65" y2="130" stroke="#555" stroke-width=".6" opacity=".2" pointer-events="none"/>
                 <path d="M44 57 Q65 52 86 57" stroke="#555" stroke-width=".7" opacity=".2" fill="none" pointer-events="none"/>
                 <circle cx="65" cy="108" r="2" fill="#555" opacity=".25" pointer-events="none"/>
-                <text id="bmt-Torso" x="65" y="90" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="700" fill="#777" pointer-events="none">Torso</text>
+                <text id="bmt-Torso" x="65" y="90" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="700" fill="#777" pointer-events="none"> </text>
               </g>
 
               <!-- Hüfte dekorativ -->
@@ -743,7 +745,7 @@ body.printing textarea::placeholder { color: transparent !important; }
                 <rect id="bms-LinkerArm-0" x="13" y="52" width="21" height="40" rx="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
                 <rect id="bms-LinkerArm-1" x="12" y="94" width="19" height="34" rx="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
                 <ellipse id="bms-LinkerArm-2" cx="21" cy="136" rx="10" ry="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
-                <text id="bmt-LinkerArm" x="21" y="90" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="700" fill="#777" pointer-events="none">li.Arm</text>
+                <text id="bmt-LinkerArm" x="21" y="90" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="700" fill="#777" pointer-events="none"> </text>
               </g>
 
               <!-- Rechter Arm (3 Shapes) -->
@@ -751,7 +753,7 @@ body.printing textarea::placeholder { color: transparent !important; }
                 <rect id="bms-RechterArm-0" x="96" y="52" width="21" height="40" rx="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
                 <rect id="bms-RechterArm-1" x="99" y="94" width="19" height="34" rx="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
                 <ellipse id="bms-RechterArm-2" cx="109" cy="136" rx="10" ry="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
-                <text id="bmt-RechterArm" x="109" y="90" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="700" fill="#777" pointer-events="none">re.Arm</text>
+                <text id="bmt-RechterArm" x="109" y="90" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="700" fill="#777" pointer-events="none"> </text>
               </g>
 
               <!-- Linkes Bein (3 Shapes) -->
@@ -759,7 +761,7 @@ body.printing textarea::placeholder { color: transparent !important; }
                 <rect id="bms-LinkesBein-0" x="38" y="147" width="23" height="50" rx="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
                 <rect id="bms-LinkesBein-1" x="39" y="199" width="21" height="46" rx="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
                 <ellipse id="bms-LinkesBein-2" cx="49" cy="252" rx="14" ry="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
-                <text id="bmt-LinkesBein" x="49" y="172" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="700" fill="#777" pointer-events="none">li.Bein</text>
+                <text id="bmt-LinkesBein" x="49" y="172" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="700" fill="#777" pointer-events="none"> </text>
               </g>
 
               <!-- Rechtes Bein (3 Shapes) -->
@@ -767,7 +769,7 @@ body.printing textarea::placeholder { color: transparent !important; }
                 <rect id="bms-RechtesBein-0" x="69" y="147" width="23" height="50" rx="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
                 <rect id="bms-RechtesBein-1" x="70" y="199" width="21" height="46" rx="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
                 <ellipse id="bms-RechtesBein-2" cx="81" cy="252" rx="14" ry="7" fill="#282828" stroke="#555" stroke-width="1.5"/>
-                <text id="bmt-RechtesBein" x="81" y="172" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="700" fill="#777" pointer-events="none">re.Bein</text>
+                <text id="bmt-RechtesBein" x="81" y="172" text-anchor="middle" dominant-baseline="middle" font-family="IBM Plex Mono,monospace" font-size="7" font-weight="700" fill="#777" pointer-events="none"> </text>
               </g>
 
             </svg>
@@ -802,11 +804,9 @@ body.printing textarea::placeholder { color: transparent !important; }
       <div class="s-body" style="flex:1; display:flex; flex-direction:column;">
         <div class="sub-lbl">Verdachtsdiagnose (Mehrfachauswahl)</div>
         <div class="cg-lg">
-          <label class="ci-lg"><input type="checkbox"> Herzstillstand</label>
           <label class="ci-lg"><input type="checkbox"> ACS / Herzinfarkt (V.a.)</label>
           <label class="ci-lg"><input type="checkbox"> Herzrhythmusstörung</label>
           <label class="ci-lg"><input type="checkbox"> Schlaganfall (V.a.)</label>
-          <label class="ci-lg"><input type="checkbox"> Bewusstlosigkeit</label>
           <label class="ci-lg"><input type="checkbox"> Vergiftung / Intoxikation</label>
           <label class="ci-lg"><input type="checkbox"> Drogenintoxikation</label>
           <label class="ci-lg"><input type="checkbox"> Alkoholintoxikation</label>
@@ -837,7 +837,7 @@ body.printing textarea::placeholder { color: transparent !important; }
       <div class="s-body">
         <div class="sub-lbl" style="margin-bottom:6px;">Maßnahmen (Mehrfachauswahl)</div>
 
-        <!-- Three colour-coded groups side by side -->
+        <!-- Four colour-coded groups side by side -->
         <div class="m-groups-row">
 
           <!-- ROT: Kreislauf / Blut -->
@@ -858,27 +858,36 @@ body.printing textarea::placeholder { color: transparent !important; }
 
           <!-- BLAU: Atmung -->
           <div class="m-group">
-            <div class="m-group-label blau">Atmung &amp; Monitoring</div>
+            <div class="m-group-label blau">Atmung</div>
             <div class="cg-lg" style="margin-top:5px; flex-direction:column; gap:5px;">
               <label class="ci-lg"><input type="checkbox"> O2-Gabe</label>
               <label class="ci-lg"><input type="checkbox"> Intubation</label>
               <label class="ci-lg"><input type="checkbox"> Beatmung</label>
-              <label class="ci-lg"><input type="checkbox"> 12-Kanal-EKG</label>
-              <label class="ci-lg"><input type="checkbox"> Monitoring</label>
             </div>
           </div>
 
           <div class="m-sep"></div>
 
-          <!-- GRÜN: Sonstiges -->
+          <!-- GRÜN: Versorgung -->
           <div class="m-group">
-            <div class="m-group-label gruen">Versorgung &amp; Sonstiges</div>
+            <div class="m-group-label gruen">Versorgung</div>
             <div class="cg-lg" style="margin-top:5px; flex-direction:column; gap:5px;">
               <label class="ci-lg"><input type="checkbox"> Wundversorgung</label>
-              <label class="ci-lg"><input type="checkbox"> Immobilisation</label>
-              <label class="ci-lg"><input type="checkbox"> Vakuummatratze</label>
               <label class="ci-lg"><input type="checkbox"> Wärmeerhalt</label>
               <label class="ci-lg"><input type="checkbox"> Psychische Betreuung</label>
+            </div>
+          </div>
+
+          <div class="m-sep"></div>
+
+          <!-- GELB: Geräte & Monitoring -->
+          <div class="m-group">
+            <div class="m-group-label gelb">Geräte &amp; Monitoring</div>
+            <div class="cg-lg" style="margin-top:5px; flex-direction:column; gap:5px;">
+              <label class="ci-lg"><input type="checkbox"> 12-Kanal-EKG</label>
+              <label class="ci-lg"><input type="checkbox"> Monitoring</label>
+              <label class="ci-lg"><input type="checkbox"> Perfusor</label>
+              <label class="ci-lg"><input type="checkbox"> Lucas 3</label>
             </div>
           </div>
 
