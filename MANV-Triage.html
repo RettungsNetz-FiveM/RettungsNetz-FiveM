@@ -197,6 +197,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
 .mgrp-lbl.rot  {color:#C0392B;border-left:3px solid #C0392B;padding-left:5px;background:rgba(192,57,43,.08);}
 .mgrp-lbl.blau {color:#1A6B9A;border-left:3px solid #1A6B9A;padding-left:5px;background:rgba(26,107,154,.08);}
 .mgrp-lbl.gruen{color:#1A7A5E;border-left:3px solid #1A7A5E;padding-left:5px;background:rgba(26,122,94,.08);}
+.mgrp-lbl.gelb {color:#9A7A1A;border-left:3px solid #C9A227;padding-left:5px;background:rgba(201,162,39,.10);}
 .mrow{display:flex;gap:14px;align-items:flex-start;} .mrow>.mgrp{flex:1;}
 .msep{width:1px;background:var(--m-g6);align-self:stretch;flex-shrink:0;}
 .cg-lg{display:flex;flex-wrap:wrap;gap:5px 10px;}
@@ -354,14 +355,20 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
           <div class="f"><label>Verletzungsart</label>
             <div class="cg-lg" style="margin-top:3px;">
               <label class="ci-lg"><input type="checkbox" id="cb-poly"> Polytrauma</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-sht"> SHT (V.a.)</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-thorax"> Thoraxtrauma</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-abdo"> Abdominaltrauma</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-hws"> HWS-Trauma</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-amp"> Amputation</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-prellung"> Prellung</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-schuerf"> Schürfwunde</label>
               <label class="ci-lg"><input type="checkbox" id="cb-frak"> Fraktur (V.a.)</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-sht"> SHT (Schädel-Hirn-Trauma)</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-stich"> Stichverletzung</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-schnitt"> Schnittverletzung</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-schuss"> Schusswunde</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-quetsch"> Quetschverletzung</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-riss"> Risswunde</label>
               <label class="ci-lg"><input type="checkbox" id="cb-verb"> Verbrennung</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-blut"> Starke Blutung</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-amp"> Amputation</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-avsion"> Avulsion</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-auge"> Augenverletzung</label>
+              <label class="ci-lg"><input type="checkbox" id="cb-vsonst"> Sonstiges</label>
             </div>
           </div>
           <div class="f"><label>Befundbeschreibung / Anamnese</label><textarea id="f-befund" placeholder="Kurze Beschreibung …" autocomplete="off"></textarea></div>
@@ -374,35 +381,38 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
           <div class="mrow">
             <div class="mgrp"><div class="mgrp-lbl rot">Kreislauf &amp; Blut</div>
               <div class="cg-lg mcol" style="margin-top:5px;">
-                <label class="ci-lg"><input type="checkbox" id="cb-reani"> Reanimation / AED</label>
+                <label class="ci-lg"><input type="checkbox" id="cb-reani"> Reanimation</label>
+                <label class="ci-lg"><input type="checkbox" id="cb-defib"> Defibrillation</label>
                 <label class="ci-lg"><input type="checkbox" id="cb-iv"> Venenzugang i.v.</label>
                 <label class="ci-lg"><input type="checkbox" id="cb-io"> i.o.-Zugang</label>
                 <label class="ci-lg"><input type="checkbox" id="cb-inf"> Infusion</label>
-                <label class="ci-lg"><input type="checkbox" id="cb-bluts"> Blutst. / Druckverband</label>
+                <label class="ci-lg"><input type="checkbox" id="cb-bluts"> Blutstillung / Druckverband</label>
                 <label class="ci-lg"><input type="checkbox" id="cb-tourni"> Tourniquet</label>
-                <label class="ci-lg"><input type="checkbox" id="cb-becken"> Beckenschlinge</label>
               </div>
             </div>
             <div class="msep"></div>
-            <div class="mgrp"><div class="mgrp-lbl blau">Atmung &amp; Monitoring</div>
+            <div class="mgrp"><div class="mgrp-lbl blau">Atmung</div>
               <div class="cg-lg mcol" style="margin-top:5px;">
                 <label class="ci-lg"><input type="checkbox" id="cb-o2"> O2-Gabe</label>
-                <label class="ci-lg"><input type="checkbox" id="cb-aw"> Atemwegssicherung</label>
                 <label class="ci-lg"><input type="checkbox" id="cb-intub"> Intubation</label>
                 <label class="ci-lg"><input type="checkbox" id="cb-beat"> Beatmung</label>
-                <label class="ci-lg"><input type="checkbox" id="cb-td"> Thoraxdrainage</label>
-                <label class="ci-lg"><input type="checkbox" id="cb-mon"> Monitoring / EKG</label>
               </div>
             </div>
             <div class="msep"></div>
-            <div class="mgrp"><div class="mgrp-lbl gruen">Versorgung &amp; Sonstiges</div>
+            <div class="mgrp"><div class="mgrp-lbl gruen">Versorgung</div>
               <div class="cg-lg mcol" style="margin-top:5px;">
                 <label class="ci-lg"><input type="checkbox" id="cb-wund"> Wundversorgung</label>
-                <label class="ci-lg"><input type="checkbox" id="cb-hws2"> HWS-Immobilisation</label>
-                <label class="ci-lg"><input type="checkbox" id="cb-immo"> Immobilisation</label>
                 <label class="ci-lg"><input type="checkbox" id="cb-waerme"> Wärmeerhalt</label>
-                <label class="ci-lg"><input type="checkbox" id="cb-analg"> Analgesie</label>
                 <label class="ci-lg"><input type="checkbox" id="cb-psych"> Psych. Betreuung</label>
+              </div>
+            </div>
+            <div class="msep"></div>
+            <div class="mgrp"><div class="mgrp-lbl gelb">Geräte &amp; Monitoring</div>
+              <div class="cg-lg mcol" style="margin-top:5px;">
+                <label class="ci-lg"><input type="checkbox" id="cb-ekg"> 12-Kanal-EKG</label>
+                <label class="ci-lg"><input type="checkbox" id="cb-monitor"> Monitoring</label>
+                <label class="ci-lg"><input type="checkbox" id="cb-perfusor"> Perfusor</label>
+                <label class="ci-lg"><input type="checkbox" id="cb-lucas"> Lucas 3</label>
               </div>
             </div>
           </div>
@@ -482,16 +492,28 @@ const CAT = {
   X:  {color:'#555e6e', bg:'rgba(85,94,110,.14)',  label:'Verstorben',   roman:'X'},
 };
 const CB_MAP = {
-  'cb-poly':'Polytrauma','cb-sht':'SHT','cb-thorax':'Thoraxtrauma',
-  'cb-abdo':'Abdominaltrauma','cb-hws':'HWS-Trauma','cb-amp':'Amputation',
-  'cb-frak':'Fraktur','cb-verb':'Verbrennung','cb-blut':'Starke Blutung',
-  'cb-reani':'Reanimation/AED','cb-iv':'Venenzugang i.v.','cb-io':'i.o.-Zugang',
-  'cb-inf':'Infusion','cb-bluts':'Blutstillung','cb-tourni':'Tourniquet',
-  'cb-becken':'Beckenschlinge','cb-o2':'O2-Gabe','cb-aw':'Atemwegssicherung',
+  // Verletzungsarten
+  'cb-poly':'Polytrauma','cb-prellung':'Prellung','cb-schuerf':'Schürfwunde',
+  'cb-frak':'Fraktur','cb-sht':'SHT','cb-stich':'Stichverletzung',
+  'cb-schnitt':'Schnittverletzung','cb-schuss':'Schusswunde',
+  'cb-quetsch':'Quetschverletzung','cb-riss':'Risswunde',
+  'cb-verb':'Verbrennung','cb-amp':'Amputation','cb-avsion':'Avulsion',
+  'cb-auge':'Augenverletzung','cb-vsonst':'Sonstiges',
+  // Kreislauf & Blut
+  'cb-reani':'Reanimation','cb-defib':'Defibrillation',
+  'cb-iv':'Venenzugang i.v.','cb-io':'i.o.-Zugang',
+  'cb-inf':'Infusion','cb-bluts':'Blutstillung/Druckverband',
+  'cb-tourni':'Tourniquet','cb-becken':'Beckenschlinge',
+  // Atmung
+  'cb-o2':'O2-Gabe','cb-aw':'Atemwegssicherung',
   'cb-intub':'Intubation','cb-beat':'Beatmung','cb-td':'Thoraxdrainage',
-  'cb-mon':'Monitoring/EKG','cb-wund':'Wundversorgung','cb-hws2':'HWS-Immob.',
-  'cb-immo':'Immobilisation','cb-waerme':'Wärmeerhalt','cb-analg':'Analgesie',
-  'cb-psych':'Psych.Betreuung'
+  // Versorgung
+  'cb-wund':'Wundversorgung','cb-hws2':'HWS-Immob.',
+  'cb-immo':'Immobilisation','cb-waerme':'Wärmeerhalt',
+  'cb-analg':'Analgesie','cb-psych':'Psych.Betreuung',
+  // Geräte & Monitoring
+  'cb-ekg':'12-Kanal-EKG','cb-monitor':'Monitoring',
+  'cb-perfusor':'Perfusor','cb-lucas':'Lucas 3'
 };
 const TXT = ['f-name','f-dob','f-fundort','f-findtime','f-puls','f-rr','f-spo2',
              'f-hauptv','f-befund','f-massn-extra','f-kh','f-transportzeit','f-bemerk'];
