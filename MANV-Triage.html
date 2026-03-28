@@ -376,44 +376,14 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
           </div>
         </div>
       </div>
-      <!-- 04 VERLETZUNG -->
+      <!-- 04 VERLETZUNG & BODYMAP -->
       <div class="ms" style="border-left-color:#B8470B;">
         <div class="ms-head"><span class="ms-num" style="color:#B8470B;">04</span><span class="ms-title">Verletzungsmuster &amp; Diagnose</span></div>
         <div class="ms-body">
-          <div class="g3">
-            <div class="f c2"><label>Hauptverletzung / Leitsymptom</label><input type="text" id="f-hauptv" placeholder="z.B. SHT, Thoraxtrauma …" autocomplete="off"></div>
-            <div class="f"><label>Unfallmechanismus</label><select id="f-mech"><option value="">—</option><option>Stumpfes Trauma</option><option>Penetrierendes Trauma</option><option>Verbrennungen</option><option>Inhalationstrauma</option><option>Sturz</option><option>Explosion / Druckwelle</option><option>Elektrounfall</option><option>Schussverletzung</option><option>Internistisch</option><option>Sonstiges</option></select></div>
-          </div>
-          <div class="f"><label>Verletzungsart</label>
-            <div class="cg-lg" style="margin-top:3px;">
-              <label class="ci-lg"><input type="checkbox" id="cb-poly"> Polytrauma</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-prellung"> Prellung</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-schuerf"> Schürfwunde</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-frak"> Fraktur (V.a.)</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-sht"> SHT (Schädel-Hirn-Trauma)</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-stich"> Stichverletzung</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-schnitt"> Schnittverletzung</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-schuss"> Schusswunde</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-quetsch"> Quetschverletzung</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-riss"> Risswunde</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-verb"> Verbrennung</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-amp"> Amputation</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-avsion"> Avulsion</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-auge"> Augenverletzung</label>
-              <label class="ci-lg"><input type="checkbox" id="cb-vsonst"> Sonstiges</label>
-            </div>
-          </div>
-          <div class="f"><label>Befundbeschreibung / Anamnese</label><textarea id="f-befund" placeholder="Kurze Beschreibung …" autocomplete="off"></textarea></div>
-        </div>
-      </div>
-      <!-- 04b BODYMAP -->
-      <div class="ms" style="border-left-color:#B8470B;">
-        <div class="ms-head"><span class="ms-num" style="color:#B8470B;">04b</span><span class="ms-title">Bodymap — Verletzungslokalisation</span></div>
-        <div class="ms-body">
-          <div style="display:flex;gap:14px;align-items:flex-start;">
-            <!-- SVG Body -->
+          <div style="display:flex;gap:18px;align-items:flex-start;">
+            <!-- LINKS: Bodymap -->
             <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;">
-              <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--m-g4);">Zone anklicken</div>
+              <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--m-g4);">Verletzungslokalisation — Zone anklicken</div>
               <svg id="bm-svg" width="110" height="240" viewBox="0 0 130 280" style="display:block;overflow:visible;cursor:pointer;">
                 <g id="bmg-Kopf" class="bm-zone-g" onclick="bmZoneClick('Kopf')">
                   <ellipse id="bms-Kopf-0" cx="65" cy="22" rx="20" ry="21" fill="#282828" stroke="#555" stroke-width="1.5"/>
@@ -457,11 +427,15 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sa
               </svg>
               <button onclick="bmClearAll()" style="font-family:var(--mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--m-g6);background:transparent;color:var(--m-g4);cursor:pointer;padding:3px 10px;border-radius:2px;margin-top:4px;transition:all .12s;" onmouseover="this.style.borderColor='#C0392B';this.style.color='#C0392B'" onmouseout="this.style.borderColor='var(--m-g6)';this.style.color='var(--m-g4)'">✕ Zurücksetzen</button>
             </div>
-            <!-- Legend -->
-            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;">
-              <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--m-g4);">Eingetragene Verletzungen</div>
-              <div id="bm-legend-list" style="display:flex;flex-direction:column;gap:4px;min-height:30px;">
-                <div id="bm-empty-hint" style="font-size:9px;color:var(--m-g4);font-style:italic;padding:4px 0;">Zone anklicken um Verletzungen einzutragen</div>
+            <!-- RECHTS: Unfallmechanismus + Befund + Legende -->
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;">
+              <div class="f"><label>Unfallmechanismus</label><select id="f-mech"><option value="">—</option><option>Stumpfes Trauma</option><option>Penetrierendes Trauma</option><option>Verbrennungen</option><option>Inhalationstrauma</option><option>Sturz</option><option>Explosion / Druckwelle</option><option>Elektrounfall</option><option>Schussverletzung</option><option>Internistisch</option><option>Sonstiges</option></select></div>
+              <div class="f"><label>Befundbeschreibung / Anamnese</label><textarea id="f-befund" placeholder="Kurze Beschreibung …" autocomplete="off" style="min-height:80px;"></textarea></div>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--m-g4);">Eingetragene Verletzungen</div>
+                <div id="bm-legend-list" style="display:flex;flex-direction:column;gap:4px;min-height:30px;">
+                  <div id="bm-empty-hint" style="font-size:9px;color:var(--m-g4);font-style:italic;padding:4px 0;">Zone anklicken um Verletzungen einzutragen</div>
+                </div>
               </div>
             </div>
           </div>
@@ -614,12 +588,13 @@ const CB_MAP = {
   'cb-perfusor':'Perfusor','cb-lucas':'Lucas 3'
 };
 const TXT = ['f-name','f-dob','f-fundort','f-findtime','f-puls','f-rr','f-spo2',
-             'f-hauptv','f-befund','f-massn-extra','f-kh','f-transportzeit','f-bemerk','f-transport-fz'];
+             'f-befund','f-massn-extra','f-kh','f-transportzeit','f-bemerk','f-transport-fz'];
 const SEL = ['f-sex','f-atemweg','f-atmung','f-kreislauf','f-gcs','f-mech','f-transport','f-schockraum'];
 const MED_OPTS = '<option value="">—</option><option>Intravenöser Zugang (I.V.)</option><option>Intraossärer Zugang (I.O.)</option><option>Oral (p.o.)</option><option>Inhalativ</option><option>Subkutan (s.c.)</option>';
 
 // Eindeutige ID für diesen Browser-Tab
 const MY_ID = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const PRESENCE_TTL = 15000; // ms — Presence-Einträge älter als 15s gelten als tot
 
 /* ═══════════════════════════════════════════════════════════
    STATE
@@ -676,26 +651,19 @@ async function doConnect(){
   requestNotifPermission();
   try { await fbPut('/manv/presence/' + MY_ID, {at: Date.now()}); } catch(e){}
 
-  // Zuverlässige Cleanup beim Schließen/Reload
-  async function cleanup(){
-    // 1. Eigene Presence löschen
-    await fetch(FB + '/manv/presence/' + MY_ID + '.json?_=' + Date.now(),
-      {method:'DELETE', keepalive:true}).catch(()=>{});
-    if(editId) fetch(FB + '/manv/editing/' + editId + '.json?_=' + Date.now(),
-      {method:'DELETE', keepalive:true}).catch(()=>{});
-    // 2. Prüfen ob wir letzter waren → alles löschen
-    try {
-      const r = await fetch(FB + '/manv/presence.json?_=' + Date.now(), {cache:'no-store'});
-      const d = await r.json();
-      if(!d || Object.keys(d).length === 0){
-        fetch(FB + '/manv/patients.json?_='+Date.now(), {method:'DELETE', keepalive:true});
-        fetch(FB + '/manv/editing.json?_='+Date.now(),  {method:'DELETE', keepalive:true});
-        fetch(FB + '/manv/chat.json?_='+Date.now(),     {method:'DELETE', keepalive:true});
-      }
-    } catch(e){}
+  // Cleanup beim Schliessen: alle keepalive-Requests SYNCHRON feuern (kein await!)
+  // Browser bricht async-Code ab, keepalive:true laeuft dennoch durch.
+  function cleanup(){
+    fetch(FB + '/manv/presence/' + MY_ID + '.json', {method:'DELETE', keepalive:true}).catch(()=>{});
+    if(editId) fetch(FB + '/manv/editing/' + editId + '.json', {method:'DELETE', keepalive:true}).catch(()=>{});
+    // Immer alle Daten loeschen — andere aktive Tabs schreiben sie sofort neu.
+    // Wenn wir der letzte Tab waren, bleibt Firebase sauber.
+    fetch(FB + '/manv/patients.json', {method:'DELETE', keepalive:true}).catch(()=>{});
+    fetch(FB + '/manv/editing.json',  {method:'DELETE', keepalive:true}).catch(()=>{});
+    fetch(FB + '/manv/chat.json',     {method:'DELETE', keepalive:true}).catch(()=>{});
   }
-  window.addEventListener('pagehide',     () => cleanup(), {once:true});
-  window.addEventListener('beforeunload', () => cleanup(), {once:true});
+  window.addEventListener('pagehide',     cleanup, {once:true, capture:true});
+  window.addEventListener('beforeunload', cleanup, {once:true, capture:true});
 
   // Sofort ersten Poll, dann Polling-Loop starten
   await pollAll();
@@ -709,22 +677,18 @@ async function goOffline(silent=false){
   stopPolling();
   if(editId) await releaseEditLock(editId);
 
-  // Presence löschen
-  await fetch(FB + '/manv/presence/' + MY_ID + '.json?_=' + Date.now(),
-    {method:'DELETE', keepalive:true}).catch(()=>{});
+  // Presence sofort loeschen (keepalive, kein await noetig)
+  fetch(FB + '/manv/presence/' + MY_ID + '.json', {method:'DELETE', keepalive:true}).catch(()=>{});
 
-  // Prüfen ob wir der letzte Teilnehmer waren → alles löschen
+  // Alle Einsatzdaten loeschen — wenn noch andere Tabs aktiv sind,
+  // schreiben sie ihre Patienten beim naechsten Save selbst neu.
+  // Wenn wir der letzte waren, bleibt Firebase sauber.
   try {
-    const presData = await fetch(FB + '/manv/presence.json?_=' + Date.now(), {cache:'no-store'})
-      .then(r => r.json());
-    const remaining = presData ? Object.keys(presData).length : 0;
-    if(remaining === 0){
-      await Promise.all([
-        fetch(FB + '/manv/patients.json?_=' + Date.now(), {method:'DELETE', keepalive:true}),
-        fetch(FB + '/manv/editing.json?_=' + Date.now(),  {method:'DELETE', keepalive:true}),
-        fetch(FB + '/manv/chat.json?_=' + Date.now(),     {method:'DELETE', keepalive:true})
-      ]);
-    }
+    await Promise.all([
+      fbDel('/manv/patients'),
+      fbDel('/manv/editing'),
+      fbDel('/manv/chat')
+    ]);
   } catch(e){}
 
   // Lokalen State leeren
@@ -760,15 +724,31 @@ async function pollAll(){
       fbGet('/manv/editing')
     ]);
 
-    // ── Presence / Teilnehmer ──────────────────────────────
-    const presKeys  = presData ? Object.keys(presData) : [];
+    // ── Heartbeat: eigene Presence aktualisieren ──────────
+    fbPut('/manv/presence/' + MY_ID, {at: Date.now()}).catch(()=>{});
+
+    // ── Presence / Teilnehmer (veraltete Einträge ignorieren) ──
+    const now = Date.now();
+    const presKeys = presData
+      ? Object.keys(presData).filter(k => {
+          const entry = presData[k];
+          // Einträge ohne Timestamp (Altformat) oder älter als TTL gelten als tot
+          if(!entry || typeof entry.at !== 'number') return false;
+          return (now - entry.at) < PRESENCE_TTL;
+        })
+      : [];
+    // Veraltete Presence-Einträge direkt aufräumen
+    if(presData){
+      Object.keys(presData).forEach(k => {
+        if(!presKeys.includes(k)){
+          fbDel('/manv/presence/' + k).catch(()=>{});
+        }
+      });
+    }
     const userCount = presKeys.length;
     notifyParent(userCount);
 
-    // ── 0 Teilnehmer = Alle Daten löschen ─────────────────
-    // Passiert wenn letzter User die Seite schließt/neu lädt und
-    // der beforeunload-Handler die Presence erfolgreich gelöscht hat.
-    // Wir prüfen das bei jedem Poll — sobald presence leer ist, räumen wir auf.
+    // ── 0 aktive Teilnehmer = Alle Daten löschen ──────────
     if(userCount === 0){
       await Promise.all([
         fbDel('/manv/patients'),
@@ -1115,7 +1095,6 @@ function readF(){
   obj.rr       = obj['f-rr'];
   obj.spo2     = obj['f-spo2'];
   obj.gcs      = obj['f-gcs'];
-  obj.hauptv   = obj['f-hauptv'];
   obj.befund   = obj['f-befund'];
   obj.massnahmen = checks.map(id => CB_MAP[id]);
   return obj;
@@ -1259,9 +1238,8 @@ function buildCard(p){
         '<div class="vc"><div class="vc-l">Puls</div><div class="vc-v">'+(p.puls?p.puls+'/min':'—')+'</div></div>'+
         '<div class="vc"><div class="vc-l">RR</div><div class="vc-v">'+(p.rr||'—')+'</div></div>'+
       '</div>'+
-      '<div class="pat-diag'+((!p.hauptv&&!p.befund)?' empty':'')+'">'+
-        (p.hauptv ? '<b style="color:var(--white)">'+p.hauptv+'</b>'+(p.befund?' — ':'') : '')+
-        (p.befund || (p.hauptv ? '' : 'Keine Beschreibung erfasst'))+
+      '<div class="pat-diag'+(!p.befund?' empty':'')+'">'+
+        (p.befund || 'Keine Beschreibung erfasst')+
       '</div>'+
     '</div>'+
     '<div class="pat-foot">'+
